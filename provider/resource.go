@@ -17,9 +17,21 @@ const (
 	Stopped
 )
 
-type ResourceInterface interface {
-	String() string
-	isActive() bool
+type ResourceDestroyer interface {
+	Destroy([]*Resource) error
+}
+
+type ResourceStopResumer interface {
+	Stop([]*Resource) error
+	Resume([]*Resource) error
+}
+
+type ResourceManager interface {
+	ResourceDestroyer
+	ResourceStopResumer
+	GetAll() ([]*Resource, error)
+	GetReapable(Config) ([]*Resource, error)
+	GetName() string
 }
 
 // Resource : The Provider Interface
@@ -40,6 +52,9 @@ type Resource struct {
 	DestroyError error
 	// Error thrown when stopping/hibernating/pausing/shuttingdown the instance
 	StopError error
+
+	Region string       // Region of Resource for AWS Instances
+	Tags   ResourceTags // Tags are for AWS Instances
 }
 
 func (r Resource) String() string {

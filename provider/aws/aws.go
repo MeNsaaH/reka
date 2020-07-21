@@ -2,18 +2,11 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/mensaah/reka/provider"
-	//  "github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
-)
 
-// AWSResource : An AWS Specific Resource
-type AWSResource struct {
-	provider.Resource
-	// Specific Details to AWS Instances
-	Region string
-	Tags   provider.ResourceTags
-}
+	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/provider/aws/ec2"
+)
 
 func getState(s int64) provider.State {
 	switch s {
@@ -44,4 +37,17 @@ func GetConfig() aws.Config {
 	//  cfg.Region = endpoints.UsEast2RegionID
 	cfg.Region = "us-east-2"
 	return cfg
+}
+
+func NewProvider() provider.Provider {
+	aws := provider.Provider{}
+	aws.Name = "AWS"
+	config := GetConfig()
+	ec2Manager := ec2.InitManager(config)
+
+	resources := map[string]provider.ResourceManager{
+		ec2.Name: &ec2Manager,
+	}
+	aws.ResourceManagers = resources
+	return aws
 }
