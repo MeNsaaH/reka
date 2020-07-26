@@ -5,30 +5,22 @@ import (
 	"time"
 )
 
-// State :The Current State of the Resource
-type State int
-
-const (
-	Pending State = iota
-	Running
-	ShuttingDown
-	Terminated
-	Stopping
-	Stopped
-)
-
+// ResourceDestroyer implements methods to completely Destroy a resource
 type ResourceDestroyer interface {
 	Destroy([]*Resource) error
 }
 
-type ResourceStopResumer interface {
+// ResourceStopperResumer implements methods to stop and resume a resource when condition is met
+// Resources that implement this interface can be stopped and resumed e.g VMs
+type ResourceStopperResumer interface {
 	Stop([]*Resource) error
 	Resume([]*Resource) error
 }
 
+// ResourceManager : Implements all methods to manage resource state
 type ResourceManager interface {
 	ResourceDestroyer
-	ResourceStopResumer
+	ResourceStopperResumer
 	GetAll() ([]*Resource, error)
 	GetReapable(Config) ([]*Resource, error)
 	GetName() string
@@ -58,7 +50,7 @@ type Resource struct {
 }
 
 func (r Resource) String() string {
-	return fmt.Sprintf("%s - %s", r.Name, r.ID)
+	return fmt.Sprintf("<%s:%s>", r.Name, r.ID)
 }
 
 func (r Resource) IsActive() bool {

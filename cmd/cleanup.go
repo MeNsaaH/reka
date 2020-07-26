@@ -39,8 +39,10 @@ to quickly create a Cobra application.`,
 		provider := aws.NewProvider()
 		log.Info("About to start getting Resources")
 		resources := provider.GetAllResources()
-		log.Info(resources)
-		provider.DestroyResources(resources)
+		log.Info("All Resources: ", resources)
+		stoppableResources := provider.GetStoppableResources(resources, *provider.Config)
+		log.Info("Reapable Resources ", stoppableResources)
+		provider.ResumeResources(resources)
 	},
 }
 

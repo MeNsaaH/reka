@@ -15,7 +15,7 @@ func GetResourceState(s int64) provider.State {
 	case 32:
 		return provider.ShuttingDown
 	case 48:
-		return provider.Terminated
+		return provider.Destroyed
 	case 64:
 		return provider.Stopping
 	case 80:

@@ -17,7 +17,7 @@ func getState(s int64) provider.State {
 	case 32:
 		return provider.ShuttingDown
 	case 48:
-		return provider.Terminated
+		return provider.Destroyed
 	case 64:
 		return provider.Stopping
 	case 80:
@@ -42,6 +42,7 @@ func GetConfig() aws.Config {
 func NewProvider() provider.Provider {
 	aws := provider.Provider{}
 	aws.Name = "AWS"
+	aws.Config = &provider.Config{}
 	config := GetConfig()
 	ec2Manager := ec2.InitManager(config)
 

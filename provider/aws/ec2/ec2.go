@@ -19,6 +19,8 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 		for _, instance := range reservation.Instances {
 			tags := utils.ParseResourceTags(instance.Tags)
 			// We need the creation-date when parsing Tags for relative defintions
+			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
+			// To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
 			tags["creation-date"] = (*instance.LaunchTime).String()
 			ec2 := NewEC2(*instance.InstanceId)
 			ec2.Region = region
@@ -26,6 +28,7 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 			ec2.CreationDate = *instance.LaunchTime
 			ec2.Tags = tags
 			ec2.State = utils.GetResourceState(*instance.State.Code)
+			log.Info(tags)
 			ec2Instances = append(ec2Instances, ec2)
 		}
 	}
