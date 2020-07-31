@@ -6,6 +6,11 @@ import (
 
 	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws/ec2"
+	"github.com/mensaah/reka/provider/aws/s3"
+)
+
+const (
+	providerName = "AWS"
 )
 
 func getState(s int64) provider.State {
@@ -39,15 +44,18 @@ func GetConfig() aws.Config {
 	return cfg
 }
 
+// NewProvider : Creates a New AWS Provider
 func NewProvider() provider.Provider {
 	aws := provider.Provider{}
-	aws.Name = "AWS"
+	aws.Name = providerName
 	aws.Config = &provider.Config{}
 	config := GetConfig()
 	ec2Manager := ec2.InitManager(config)
+	s3Manager := s3.InitManager(config)
 
 	resources := map[string]provider.ResourceManager{
 		ec2.Name: &ec2Manager,
+		s3.Name:  &s3Manager,
 	}
 	aws.ResourceManagers = resources
 	return aws

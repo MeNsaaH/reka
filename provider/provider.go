@@ -81,6 +81,11 @@ func (p *Provider) GetResumableResources(resources Resources, config Config) Res
 	return resumableResource
 }
 
+// GetUnusedResources : Return the resources which can are not currently in use and can be destroyed
+func (p *Provider) GetUnusedResources(resources Resources, config Config) Resources {
+	return Resources{}
+}
+
 // DestroyResources : Return the resources which can be destroyed
 func (p *Provider) DestroyResources(resources Resources) map[string]string {
 	errs := make(map[string]string)

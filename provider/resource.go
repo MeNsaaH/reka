@@ -19,12 +19,23 @@ type ResourceStopperResumer interface {
 
 // ResourceManager : Implements all methods to manage resource state
 type ResourceManager interface {
-	ResourceDestroyer
 	ResourceStopperResumer
+	ResourceDestroyer
 	GetAll() ([]*Resource, error)
 	GetReapable(Config) ([]*Resource, error)
 	GetName() string
 }
+
+// DefaultResourceManager : Base Resource Manager to be embedded in other structs
+type DefaultResourceManager struct {
+	Name     string // Short Name of the Resource Manager
+	LongName string // A More Elaborate name for the manager
+}
+
+// Default Functions for Resource Managers
+func (rMgr DefaultResourceManager) Stop([]*Resource) error    { return nil }
+func (rMgr DefaultResourceManager) Resume([]*Resource) error  { return nil }
+func (rMgr DefaultResourceManager) Destroy([]*Resource) error { return nil }
 
 // Resource : The Provider Interface
 type Resource struct {
@@ -44,6 +55,8 @@ type Resource struct {
 	DestroyError error
 	// Error thrown when stopping/hibernating/pausing/shuttingdown the instance
 	StopError error
+	// Error thrown when resuming the instance
+	ResumeError error
 
 	Region string       // Region of Resource for AWS Instances
 	Tags   ResourceTags // Tags are for AWS Instances

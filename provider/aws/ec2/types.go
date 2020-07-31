@@ -13,9 +13,8 @@ const (
 
 // ResourceManager : Implements the ResourceManager Interface to expose methods implemented by each resource module
 type ResourceManager struct {
-	Name     string
-	LongName string
-	config   aws.Config
+	provider.DefaultResourceManager
+	config aws.Config
 }
 
 func InitManager(cfg aws.Config) ResourceManager {

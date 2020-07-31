@@ -40,9 +40,9 @@ to quickly create a Cobra application.`,
 		log.Info("About to start getting Resources")
 		resources := provider.GetAllResources()
 		log.Info("All Resources: ", resources)
-		stoppableResources := provider.GetStoppableResources(resources, *provider.Config)
-		log.Info("Reapable Resources ", stoppableResources)
-		provider.ResumeResources(resources)
+		reapableResources := provider.GetDestroyableResources(resources, *provider.Config)
+		log.Info("Reapable Resources ", reapableResources)
+		provider.DestroyResources(resources)
 	},
 }
 

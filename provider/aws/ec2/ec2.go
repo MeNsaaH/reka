@@ -3,6 +3,7 @@ package ec2
 import (
 	"context"
 	"fmt"
+	"unsafe"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -17,7 +18,9 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 	var ec2Instances []*provider.Resource
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
-			tags := utils.ParseResourceTags(instance.Tags)
+			// https://stackoverflow.com/a/48554123/7167357
+			tags := utils.ParseResourceTags(*(*[]utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
+
 			// We need the creation-date when parsing Tags for relative defintions
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
 			// To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
