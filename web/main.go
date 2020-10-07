@@ -74,6 +74,7 @@ func initLogger() {
 	}
 }
 
+// TODO Add logger to Providers during configuration
 func initProviders() []*types.Provider {
 	for _, p := range config.GetProviders() {
 		var (
@@ -104,12 +105,16 @@ func initCronJob(frequency int32) {
 	}
 }
 
+// Refresh current status of resources from Providers
 func refreshResources(providers []*types.Provider) {
 	for _, provider := range providers {
 		allResources := provider.GetAllResources()
 		log.Info(allResources)
-		resources := provider.GetDestroyableResources(allResources)
-		log.Info(resources)
-		log.Info(provider.DestroyResources(resources))
+		destroyableResources := provider.GetDestroyableResources(allResources)
+		save(destroyableResources)
+		stoppableResources := provider.GetStoppableResources(allResources)
+		save(stoppableResources)
+		resumableResources := provider.GetResumableResources(allResources)
+		save(resumableResources)
 	}
 }

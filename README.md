@@ -6,15 +6,10 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 ### Project Name
 `REKA` is derived from a Native Nigerian Language, Igbo, meaning `Reap`.
 
-Currently Supports:
-#### AWS
-- EC2
-- S3
-
 ### TODO
 - [x] Bootstrap application architecture
 - [x] get resources with specified tags for destruction
-- [ ] Schedule tasks for destruction
+- [ ] Schedule resource refreshing
 - [ ] Create Web Dashboard 
 - [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
 - [ ] Support Manual Trigger of resources reaping from Dashboard/CLI
@@ -22,19 +17,19 @@ Currently Supports:
 - [ ] Create Kubernetes Manifests and Helm Charts
 - [ ] Create CLI
 
-#### AWS
-- [x] EC2: Stop|Resume| Destroy
-- [x] S3: Destroy
-- [ ] EKS : Stop|Resume: by Resizing | Destroy
-- [ ] RDS : Stop | resume | Destroy
-- [ ] EBS : Destroy | Unused EBS Volumes
-- [ ] Elastic IPs : Destroy | Unused IPs
-- [ ] VPCs : Destroy | Unused VPCs
+#### Supported Resources
+- AWS: https://github.com/MeNsaaH/reka/issues/1 
+- GCP: https://github.com/MeNsaaH/reka/issues/2 
 
-#### GCP
-- [ ] Compute : Stop|Resume: by Resizing | Destroy
-- [ ] Cloud SQL: Stop | resume | Destroy
-- [ ] EBS : Destroy | Unused EBS Volumes
-- [ ] Cloud Storage : Destroy
-- [ ] IPs : Destroy | Unused IPs
-- [ ] VPCs : Destroy | Unused VPCs
+
+## Development
+```bash
+# Web UI
+cd web
+go run main.go
+```
+
+using [air](https://github.com/cosmtrek/air) with autoreload UI features
+```bash
+    air -c .air.toml
+```
