@@ -1,0 +1,76 @@
+package controllers
+
+import (
+	"html/template"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+
+	"github.com/mensaah/reka/config"
+	"github.com/mensaah/reka/types"
+)
+
+var (
+	tmpl      *template.Template
+	providers map[string]*types.Provider
+)
+
+// GetTemplatesDir get path to templates file
+func GetTemplatesDir() string {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	return path.Join(workingDir, "web/templates")
+}
+
+//LoadTemplates loads templates from views directory
+func LoadTemplates(p []*types.Provider) {
+	// Load Providers
+	providers = make(map[string]*types.Provider)
+	for _, provider := range p {
+		providers[provider.Name] = provider
+	}
+
+	tmpl = template.New("").Funcs(template.FuncMap{
+		"providerEnabled":      ProviderEnabled,
+		"stringIn":             StringIn,
+		"getProviderResources": GetProviderResources,
+	})
+
+	fn := func(path string, f os.FileInfo, err error) error {
+		if f.IsDir() != true && strings.HasSuffix(f.Name(), ".tmpl") {
+			var err error
+			tmpl, err = tmpl.ParseFiles(path)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if err := filepath.Walk(GetTemplatesDir(), fn); err != nil {
+		panic(err)
+	}
+}
+
+//GetTemplates returns preloaded templates
+func GetTemplates() *template.Template {
+	return tmpl
+}
+
+// StringIn returns whether a string is in an array
+func StringIn(s string, arr []string) bool {
+	return true
+}
+
+// ProviderEnabled returns whether a provider is enabled or not
+func ProviderEnabled(s string) bool {
+	return StringIn(s, config.GetProviders())
+}
+
+// GetProviderResources returns the resource names supported by the provider
+func GetProviderResources(provider string) []string {
+	return providers[provider].GetResourceNames()
+}

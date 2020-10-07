@@ -1,0 +1,256 @@
+{{define "index"}}
+{{template "header" .}}
+{{template "navbar" .}}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <h1 class="m-0 text-dark"><i class="h6 mx-4">Last Run 10 Nov, 2020 8:10:43</i></h1>
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Small boxes (Stat box) -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>150</h3>
+
+                            <p>Tracked Resource</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>53</h3>
+
+                            <p>Running Resources</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>44</h3>
+
+                            <p>Stopped Resources</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-stop"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+                <div class="col-lg-3 col-6">
+                    <!-- small box -->
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>65</h3>
+
+                            <p>Destroyed Resources</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- ./col -->
+            </div>
+            <!-- /.row -->
+            <!-- Main row -->
+            <div class="row">
+                <!-- Left col -->
+                <section class="col-lg-7 connectedSortable">
+                    <div class="card">
+                        <div class="card-header border-transparent">
+                            <h3 class="card-title">Recent Resource Changes</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table m-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Resource ID</th>
+                                            <th>Resource Type</th>
+                                            <th>Status</th>
+                                            <th>Time status changed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                                            <td>EC2</td>
+                                            <td><span class="badge badge-success">Running</span></td>
+                                            <td>
+                                                <div class="sparkbar" data-color="#00a65a" data-height="20">
+                                                    10/10/2020 8:49:12</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                                            <td>EBS</td>
+                                            <td><span class="badge badge-warning">Pending</span></td>
+                                            <td>
+                                                <div class="sparkbar" data-color="#f39c12" data-height="20">
+                                                    10/10/2020 8:57:12<div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                                            <td>EC2</td>
+                                            <td><span class="badge badge-danger">Stopped</span></td>
+                                            <td>
+                                                <div class="sparkbar" data-color="#f56954" data-height="20">
+                                                    10/10/2020 10:08:18</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                                            <td>EKS</td>
+                                            <td><span class="badge badge-info">Starting</span></td>
+                                            <td>
+                                                <div class="sparkbar" data-color="#00c0ef" data-height="20">
+                                                    10/10/2020 15:10:18</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer clearfix">
+                            <a href="javascript:void(0)" class="btn btn-sm btn-secondary float-right">View All
+                                Resources</a>
+                        </div>
+                        <!-- /.card-footer -->
+                    </div>
+                </section>
+                <!-- /.Left col -->
+                <!-- right col (We are only adding the ID to make the widgets sortable)-->
+                <section class="col-lg-5 connectedSortable">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Resource Types</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body p-0">
+                        <ul class="products-list product-list-in-card pl-2 pr-2">
+                            <li class="item">
+                                <div class="product-img">
+                                    <img src="/static/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                                </div>
+                                <div class="product-info">
+                                    <a href="javascript:void(0)" class="product-title">EC2
+                                        <span class="badge badge-success float-right">
+                                        48
+                                        </span>
+                                    </a>
+                                    <span class="product-description">Elastic Compute 
+                                    </span>
+                                </div>
+                            </li>
+                            <!-- /.item -->
+                            <li class="item">
+                                <div class="product-img">
+                                    <img src="/static/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                                </div>
+                                <div class="product-info">
+                                    <a href="javascript:void(0)" class="product-title">EBS
+                                        <span class="badge badge-success float-right">
+                                        10
+                                        </span>
+                                    </a>
+                                    <span class="product-description">
+                                     Elastic Block Storage 
+                                    </span>
+                                </div>
+                            </li>
+                            <!-- /.item -->
+                            <li class="item">
+                                <div class="product-img">
+                                    <img src="/static/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                                </div>
+                                <div class="product-info">
+                                    <a href="javascript:void(0)" class="product-title">
+                                    S3
+                                        <span class="badge badge-success float-right">
+                                        30
+                                        </span>
+                                    </a>
+                                    <span class="product-description">
+                                    Simple Storage Service
+                                    </span>
+                                </div>
+                            </li>
+                            <!-- /.item -->
+                            <li class="item">
+                                <div class="product-img">
+                                    <img src="/static/img/default-150x150.png" alt="Product Image" class="img-size-50">
+                                </div>
+                                <div class="product-info">
+                                    <a href="javascript:void(0)" class="product-title">EFS
+                                        <span class="badge badge-success float-right">9</span></a>
+                                    <span class="product-description">
+                                    Elastic File System
+                                    </span>
+                                </div>
+                            </li>
+                            <!-- /.item -->
+                        </ul>
+                    </div>
+                    <!-- /.card-body -->
+                    <div class="card-footer text-center">
+                        <a href="javascript:void(0)" class="uppercase">View All Products</a>
+                    </div>
+                    <!-- /.card-footer -->
+                </div>
+                </section>
+    </section>
+    <!-- right col -->
+</div>
+<!-- /.row (main row) -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{{template "footer" .}}
+{{end}}
