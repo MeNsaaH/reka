@@ -1,6 +1,8 @@
-package provider
+package types
 
 import (
+	"sync"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,34 +15,35 @@ type Resources map[string][]*Resource
 type Provider struct {
 	Name             string
 	ResourceManagers map[string]ResourceManager // An array `ResourceManagers` interfaces
-	Config           *Config
 }
 
 // GetAllResources : Returns all resources which reka can find
 func (p *Provider) GetAllResources() Resources {
+	log.Info("Fetching All Resources")
+	var wg sync.WaitGroup
 	resources := make(Resources)
 	for _, resMgr := range p.ResourceManagers {
-		resMgrResources, err := resMgr.GetAll()
-		if err != nil {
-			log.Error(err)
-		}
-		resources[resMgr.GetName()] = resMgrResources
+		wg.Add(1)
+		go func(res Resources, resMgr ResourceManager) {
+			defer wg.Done()
+			resMgrResources, err := resMgr.GetAll()
+			if err != nil {
+				resMgr.GetLogger().Error(err)
+			}
+			res[resMgr.GetName()] = resMgrResources
+		}(resources, resMgr)
 	}
+	wg.Wait()
 	return resources
 }
 
-// Auth returns the Config object to be used for authentication of requests
-func (p *Provider) Auth(config Config) interface{} {
-	return nil
-}
-
 // GetDestroyableResources : Return the resources which can be destroyed
-func (p *Provider) GetDestroyableResources(resources Resources, config Config) Resources {
+func (p *Provider) GetDestroyableResources(resources Resources) Resources {
+	log.Debug("Getting Destroyable Resources")
 	destroyableResources := make(Resources)
 	for mgrName, resList := range resources {
 		var destroyableResList []*Resource
 		for _, resource := range resList {
-			log.Info(resource, mgrName)
 			if ShouldInitiateDestruction(resource.Tags) {
 				destroyableResList = append(destroyableResList, resource)
 			}
@@ -51,7 +54,8 @@ func (p *Provider) GetDestroyableResources(resources Resources, config Config) R
 }
 
 // GetStoppableResources : Return the resources which can be stopped
-func (p *Provider) GetStoppableResources(resources Resources, config Config) Resources {
+func (p *Provider) GetStoppableResources(resources Resources) Resources {
+	log.Debug("Getting Stoppable Resources")
 	stoppableResources := make(Resources)
 	for mgrName, resList := range resources {
 		var stoppableResList []*Resource
@@ -66,12 +70,12 @@ func (p *Provider) GetStoppableResources(resources Resources, config Config) Res
 }
 
 // GetResumableResources : Return the resources which can be Resumed
-func (p *Provider) GetResumableResources(resources Resources, config Config) Resources {
+func (p *Provider) GetResumableResources(resources Resources) Resources {
+	log.Debug("Getting resumable Resources")
 	resumableResource := make(Resources)
 	for mgrName, resList := range resources {
 		var resumableResList []*Resource
 		for _, resource := range resList {
-			log.Info(resource, mgrName)
 			if resource.IsStopped() && ShouldInitiateResumption(resource.Tags) {
 				resumableResList = append(resumableResList, resource)
 			}
@@ -82,17 +86,18 @@ func (p *Provider) GetResumableResources(resources Resources, config Config) Res
 }
 
 // GetUnusedResources : Return the resources which can are not currently in use and can be destroyed
-func (p *Provider) GetUnusedResources(resources Resources, config Config) Resources {
+func (p *Provider) GetUnusedResources(resources Resources) Resources {
 	return Resources{}
 }
 
 // DestroyResources : Return the resources which can be destroyed
 func (p *Provider) DestroyResources(resources Resources) map[string]string {
 	errs := make(map[string]string)
+	log.Debugf("Destroying Resources...")
 
 	for mgrName, res := range resources {
 		mgr := p.getManager(mgrName)
-		log.Infof("Destroying %s ", mgrName)
+		mgr.GetLogger().Debugf("Destroying %s ", mgrName)
 		if err := mgr.Destroy(res); err != nil {
 			errs[mgrName] = err.Error()
 		}
@@ -103,32 +108,47 @@ func (p *Provider) DestroyResources(resources Resources) map[string]string {
 // StopResources : Return the resources which can be destroyed
 func (p *Provider) StopResources(resources Resources) map[string]string {
 	errs := make(map[string]string)
+	log.Info("Stopping Resources...")
+	var wg sync.WaitGroup
 
 	for mgrName, res := range resources {
-		mgr := p.getManager(mgrName)
-		if _, ok := mgr.(ResourceStopperResumer); ok {
-			log.Infof("Stopping %s ", mgrName)
-			if err := mgr.Stop(res); err != nil {
-				errs[mgrName] = err.Error()
+		wg.Add(1)
+
+		go func(mgrName string, res []*Resource) {
+			defer wg.Done()
+			mgr := p.getManager(mgrName)
+			if m, ok := mgr.(StopperResumer); ok {
+				mgr.GetLogger().Debugf("Stopping %d %s Resources", len(res), mgrName)
+				if err := m.Stop(res); err != nil {
+					errs[mgrName] = err.Error()
+				}
 			}
-		}
+		}(mgrName, res)
 	}
+	wg.Wait()
 	return errs
 }
 
 // ResumeResources : Return the resources which can be destroyed
 func (p *Provider) ResumeResources(resources Resources) map[string]string {
+	var wg sync.WaitGroup
 	errs := make(map[string]string)
+	log.Info("Resuming Resources...")
 
 	for mgrName, res := range resources {
-		mgr := p.getManager(mgrName)
-		if _, ok := mgr.(ResourceStopperResumer); ok {
-			log.Infof("Resuming %s ", mgrName)
-			if err := mgr.Resume(res); err != nil {
-				errs[mgrName] = err.Error()
+		wg.Add(1)
+		go func(mgrName string, res []*Resource) {
+			defer wg.Done()
+			mgr := p.getManager(mgrName)
+			if m, ok := mgr.(StopperResumer); ok {
+				mgr.GetLogger().Debugf("Resuming %d %s Resources", len(res), mgrName)
+				if err := m.Resume(res); err != nil {
+					errs[mgrName] = err.Error()
+				}
 			}
-		}
+		}(mgrName, res)
 	}
+	wg.Wait()
 	return errs
 }
 
@@ -140,4 +160,13 @@ func (p *Provider) getManager(name string) ResourceManager {
 // destroys everything tracked by reka
 func (p *Provider) Nuke() (string, error) {
 	return "", nil
+}
+
+// GetResourceNames Get a array of resource names
+func (p *Provider) GetResourceNames() []string {
+	var arr []string
+	for resMgr := range p.ResourceManagers {
+		arr = append(arr, resMgr)
+	}
+	return arr
 }

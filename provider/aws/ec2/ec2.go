@@ -7,15 +7,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	log "github.com/sirupsen/logrus"
 
-	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws/utils"
+	"github.com/mensaah/reka/types"
 )
 
 // returns only instance IDs of unprotected ec2 instances
-func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, region string) ([]*provider.Resource, error) {
-	var ec2Instances []*provider.Resource
+func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, region string) ([]*types.Resource, error) {
+	var ec2Instances []*types.Resource
+	logger.Debug("Fetching EC2 Details")
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			// https://stackoverflow.com/a/48554123/7167357
@@ -25,13 +25,12 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
 			// To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
 			tags["creation-date"] = (*instance.LaunchTime).String()
-			ec2 := NewEC2(*instance.InstanceId)
+			ec2 := New(*instance.InstanceId)
 			ec2.Region = region
 			// Get CreationDate by getting LaunchTime of attached Volume
 			ec2.CreationDate = *instance.LaunchTime
 			ec2.Tags = tags
 			ec2.State = utils.GetResourceState(*instance.State.Code)
-			log.Info(tags)
 			ec2Instances = append(ec2Instances, ec2)
 		}
 	}
@@ -40,7 +39,8 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 }
 
 // GetAllEC2Instances Get all instances
-func GetAllEC2Instances(cfg aws.Config, region string) ([]*provider.Resource, error) {
+func GetAllEC2Instances(cfg aws.Config, region string) ([]*types.Resource, error) {
+	logger.Debug("Fetching EC2 Instances")
 	svc := ec2.New(cfg)
 	params := &ec2.DescribeInstancesInput{}
 
@@ -56,11 +56,12 @@ func GetAllEC2Instances(cfg aws.Config, region string) ([]*provider.Resource, er
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Found %d EC2 instances", len(instances))
 	return instances, nil
 }
 
 // StopEC2Instances Stop Running Instances
-func StopEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
+func StopEC2Instances(cfg aws.Config, instances []*types.Resource) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
@@ -74,7 +75,7 @@ func StopEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
 		return nil
 	}
 
-	log.Debug("Stopping EC2 Instances ", instanceIds, " ...")
+	logger.Debug("Stopping EC2 Instances ", instanceIds, " ...")
 
 	params := &ec2.StopInstancesInput{
 		InstanceIds: instanceIds,
@@ -90,7 +91,7 @@ func StopEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
 }
 
 // StartEC2Instances Start Stopped instances
-func StartEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
+func StartEC2Instances(cfg aws.Config, instances []*types.Resource) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
@@ -107,7 +108,7 @@ func StartEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
 	params := &ec2.StartInstancesInput{
 		InstanceIds: instanceIds,
 	}
-	log.Debug("Starting EC2 Instances ", instanceIds, " ...")
+	logger.Debug("Starting EC2 Instances ", instanceIds, " ...")
 
 	req := svc.StartInstancesRequest(params)
 	resp, err := req.Send(context.Background())
@@ -119,7 +120,7 @@ func StartEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
 }
 
 // StartEC2Instances Start Stopped instances
-func TerminateEC2Instances(cfg aws.Config, instances []*provider.Resource) error {
+func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
@@ -133,7 +134,7 @@ func TerminateEC2Instances(cfg aws.Config, instances []*provider.Resource) error
 		return nil
 	}
 
-	log.Debug("Terminating EC2 Instances ", instanceIds, " ...")
+	logger.Debug("Terminating EC2 Instances ", instanceIds, " ...")
 
 	params := &ec2.TerminateInstancesInput{
 		InstanceIds: instanceIds,

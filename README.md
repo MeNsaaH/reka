@@ -1,4 +1,6 @@
 # reka
+> Never forget that instance running again
+
 A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resources based on tags
 
 ### Project Name
@@ -12,13 +14,17 @@ Currently Supports:
 ### TODO
 - [x] Bootstrap application architecture
 - [x] get resources with specified tags for destruction
-- [ ] Add Resource Manager Dependencies
 - [ ] Schedule tasks for destruction
-- [ ] Expose API
-- [ ] Create CLI to interact with API
-- [ ] Create GUI to interact with API
+- [ ] Create Web Dashboard 
+- [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
+- [ ] Support Manual Trigger of resources reaping from Dashboard/CLI
+- [ ] Allow authentication username and password set in config file
+- [ ] Create Kubernetes Manifests and Helm Charts
+- [ ] Create CLI
 
 #### AWS
+- [x] EC2: Stop|Resume| Destroy
+- [x] S3: Destroy
 - [ ] EKS : Stop|Resume: by Resizing | Destroy
 - [ ] RDS : Stop | resume | Destroy
 - [ ] EBS : Destroy | Unused EBS Volumes

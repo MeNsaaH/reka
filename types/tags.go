@@ -1,4 +1,4 @@
-package provider
+package types
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func getCleanTag(key string) string {
 
 // Tags
 // using `reka` namespace
-// - destruction-date: The date when all resources should be reaped e.g 10-10-10 7pm; 10h (relative to starting time)
+// - destruction-date: The date when all resources should be reaped e.g `YYYY-MM-DD HH:MM`; 10h (relative to starting time)
 // - destruction-policy: stop, destroy (Whether to just stop the resources or to destroy them)
 // - active-duration : Timeframe within which the Resource should be active e.g 10:30-18:00
 // - include: Use to explicitly add a resource to be tracked by reka
@@ -65,7 +65,7 @@ func ShouldInitiateDestruction(tags ResourceTags) bool {
 			if cleanedTag == destructionDateTag {
 				date, err := now.Parse(v)
 				if err != nil {
-					log.Errorf("Invalid Tag for destruction-date: %v", cleanedTag)
+					log.Errorf("Invalid Tag for destruction-date: %v, %s", v, err)
 					continue
 				}
 				currentDate := time.Now()

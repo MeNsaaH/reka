@@ -2,8 +2,10 @@ package ec2
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
+	log "github.com/sirupsen/logrus"
 
-	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/config"
+	"github.com/mensaah/reka/types"
 )
 
 const (
@@ -13,47 +15,59 @@ const (
 
 // ResourceManager : Implements the ResourceManager Interface to expose methods implemented by each resource module
 type ResourceManager struct {
-	provider.DefaultResourceManager
+	types.DefaultResourceManager
 	config aws.Config
 }
 
-func InitManager(cfg aws.Config) ResourceManager {
-	EC2s := ResourceManager{}
-	EC2s.Name = Name
-	EC2s.LongName = LongName
-	EC2s.config = cfg
+var (
+	logger *log.Entry
+)
 
-	return EC2s
+func InitManager() ResourceManager {
+	mgr := ResourceManager{}
+	mgr.Name = Name
+	mgr.LongName = LongName
+	mgr.Provider = "aws"
+	mgr.config = config.GetAWS().Config
+	mgr.Logger = types.GetLogger(mgr.Name)
+
+	logger = mgr.Logger
+
+	return mgr
 }
 
 func (r ResourceManager) GetName() string {
 	return r.Name
 }
 
-func (r ResourceManager) GetAll() ([]*provider.Resource, error) {
+func (r ResourceManager) GetAll() ([]*types.Resource, error) {
 	region := "us-east-2"
 	return GetAllEC2Instances(r.config, region)
 }
 
-func (r ResourceManager) Destroy(resources []*provider.Resource) error {
+func (r ResourceManager) Destroy(resources []*types.Resource) error {
 	return TerminateEC2Instances(r.config, resources)
 }
 
-func (r ResourceManager) Stop(resources []*provider.Resource) error {
+func (r ResourceManager) Stop(resources []*types.Resource) error {
 	return StopEC2Instances(r.config, resources)
 }
 
-func (r ResourceManager) Resume(resources []*provider.Resource) error {
+func (r ResourceManager) Resume(resources []*types.Resource) error {
 	return StartEC2Instances(r.config, resources)
 }
 
-func (r ResourceManager) GetReapable(config provider.Config) ([]*provider.Resource, error) {
-	return []*provider.Resource{}, nil
+func (r ResourceManager) GetReapable() ([]*types.Resource, error) {
+	return []*types.Resource{}, nil
 }
 
-// NewEC2 Returns a new EC2 Resource object
-func NewEC2(id string) *provider.Resource {
-	resource := provider.Resource{}
+func (r ResourceManager) GetLogger() *log.Entry {
+	return r.Logger
+}
+
+// New Returns a new EC2 Resource object
+func New(id string) *types.Resource {
+	resource := types.Resource{}
 	resource.ID = id
 	resource.Name = Name
 	resource.LongName = LongName
