@@ -22,7 +22,7 @@
                     <!-- small box -->
                     <div class="small-box bg-info">
                         <div class="inner">
-                            <h3>150</h3>
+                            <h3>{{ .TrackedResourceCount }}</h3>
 
                             <p>Tracked Resource</p>
                         </div>
@@ -37,7 +37,7 @@
                     <!-- small box -->
                     <div class="small-box bg-success">
                         <div class="inner">
-                            <h3>53</h3>
+                            <h3>{{ .RunningResourceCount }}</h3>
 
                             <p>Running Resources</p>
                         </div>
@@ -52,7 +52,7 @@
                     <!-- small box -->
                     <div class="small-box bg-warning">
                         <div class="inner">
-                            <h3>44</h3>
+                            <h3>{{ .StoppedResourceCount }}</h3>
 
                             <p>Stopped Resources</p>
                         </div>
@@ -67,7 +67,7 @@
                     <!-- small box -->
                     <div class="small-box bg-danger">
                         <div class="inner">
-                            <h3>65</h3>
+                            <h3>{{ .DestroyedResourceCount }}</h3>
 
                             <p>Destroyed Resources</p>
                         </div>
@@ -101,48 +101,26 @@
                                     <thead>
                                         <tr>
                                             <th>Resource ID</th>
+                                            <th>Region</th>
                                             <th>Resource Type</th>
                                             <th>Status</th>
                                             <th>Time status changed</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    
+                                    {{range .RecentResourceUpdates}}
                                         <tr>
-                                            <td><a href="pages/examples/invoice.html">OR9842</a></td>
-                                            <td>EC2</td>
-                                            <td><span class="badge badge-success">Running</span></td>
+                                            <td><a href="pages/examples/invoice.html">{{ .UUID }}</a></td>
+                                            <td>{{ .Region }}</td>
+                                            <td>{{ .ManagerName }}</td>
+                                            <td><span class="badge badge-success">{{ .State }}</span></td>
                                             <td>
                                                 <div class="sparkbar" data-color="#00a65a" data-height="20">
-                                                    10/10/2020 8:49:12</div>
+                                                    {{ .UpdatedAt.Format "Jan 02, 2006 15:04:05 UTC" }}</div>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td><a href="pages/examples/invoice.html">OR1848</a></td>
-                                            <td>EBS</td>
-                                            <td><span class="badge badge-warning">Pending</span></td>
-                                            <td>
-                                                <div class="sparkbar" data-color="#f39c12" data-height="20">
-                                                    10/10/2020 8:57:12<div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="pages/examples/invoice.html">OR7429</a></td>
-                                            <td>EC2</td>
-                                            <td><span class="badge badge-danger">Stopped</span></td>
-                                            <td>
-                                                <div class="sparkbar" data-color="#f56954" data-height="20">
-                                                    10/10/2020 10:08:18</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="pages/examples/invoice.html">OR7429</a></td>
-                                            <td>EKS</td>
-                                            <td><span class="badge badge-info">Starting</span></td>
-                                            <td>
-                                                <div class="sparkbar" data-color="#00c0ef" data-height="20">
-                                                    10/10/2020 15:10:18</div>
-                                            </td>
-                                        </tr>
+                                    {{end}}
                                     </tbody>
                                 </table>
                             </div>

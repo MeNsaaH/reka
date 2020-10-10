@@ -60,6 +60,7 @@ func main() {
 	// router.Use(controllers.ContextData())
 
 	router.GET("/", controllers.HomeGet)
+	router.GET("/provider/:provider", controllers.HomeGet)
 	// router.NoRoute(controllers.NotFound)
 	// router.NoMethod(controllers.MethodNotAllowed)
 
