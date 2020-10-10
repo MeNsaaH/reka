@@ -4,22 +4,46 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mensaah/reka/config"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-// Resource : The Provider Interface
-// fields with `gorm:"-"` are ignored
-type Resource struct {
-	ID       string
-	Name     string
+// ResourceManager : S3, CloudStorage etc
+type ResourceManager struct {
+	gorm.Model
+	Name     string `gorm:"unique;not null"`
 	LongName string
-	ImageURL string // A link to an image representing the resource
+	ImageURL string         // A link to an image/logo representing the resource
+	Config   *config.Config `gorm:"-"`
 
-	Provider string // The provider it belongs to GCP, AWS ...
-	Region   string // Region of Resource
+	Logger *log.Entry `gorm:"-"`
+
+	// Methods Implemented By Resource Manager
+	GetAll func() ([]*Resource, error) `gorm:"-"` // Required
+
+	Destroy func([]*Resource) error `gorm:"-"` // Required
+	Stop    func([]*Resource) error `gorm:"-"`
+	Resume  func([]*Resource) error `gorm:"-"`
+}
+
+func (mgr ResourceManager) String() string {
+	return mgr.Name
+}
+
+// Resource : The Provider Interface
+// fields with `gorm:"-"` are ignored in database columns
+type Resource struct {
+	gorm.Model
+	UUID        string `gorm:"unique;not null"`
+	ManagerName string
+	Manager     *ResourceManager `gorm:"foreignKey:ManagerName;references:Name"`
+
+	Region string // Region of Resource
 
 	// The current state of the instance; stopped, running, pending
-	State        State
+	State State
+	// The time the instance was created on the Provider
 	CreationDate time.Time
 
 	// Error thrown during Fetching resource related data
@@ -36,7 +60,7 @@ type Resource struct {
 }
 
 func (r Resource) String() string {
-	return fmt.Sprintf("<%s:%s>", r.Name, r.ID)
+	return fmt.Sprintf("<%s:%s>", r.Manager, r.UUID)
 }
 
 // IsActive return if resource is currently running
@@ -48,42 +72,3 @@ func (r Resource) IsActive() bool {
 func (r Resource) IsStopped() bool {
 	return r.State == Stopped
 }
-
-// StopperResumer : Interface implemented by resources that can be stopped and resumed
-type StopperResumer interface {
-	Stop([]*Resource) error
-	Resume([]*Resource) error
-}
-
-// ResourceManager : Implements all methods to manage resource state
-type ResourceManager interface {
-	Destroy([]*Resource) error
-	GetAll() ([]*Resource, error)
-	GetReapable() ([]*Resource, error)
-	GetName() string
-	GetLogger() *log.Entry
-}
-
-// DefaultResourceManager : Base Resource Manager to be embedded in other structs
-type DefaultResourceManager struct {
-	Name     string // Short Name of the Resource Manager
-	LongName string // A More Elaborate name for the manager
-	Provider string // The supported Provider
-	Logger   *log.Entry
-}
-
-//// Default Functions for Resource Managers
-//func (mgr *DefaultResourceManager) Stop([]*Resource) error {
-//  mgr.Logger.Debug("Stop not supported for this Resource")
-//  return nil
-//}
-
-//func (mgr *DefaultResourceManager) Resume([]*Resource) error {
-//  mgr.Logger.Debug("`Resume` not supported for this Resource")
-//  return nil
-//}
-
-//func (mgr *DefaultResourceManager) Destroy([]*Resource) error {
-//  mgr.Logger.Debug("`Destroy` not implemented for this Resource")
-//  return nil
-//}

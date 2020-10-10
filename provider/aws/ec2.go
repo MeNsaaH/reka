@@ -1,4 +1,4 @@
-package ec2
+package aws
 
 import (
 	"context"
@@ -7,13 +7,14 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/provider/aws/utils"
 	"github.com/mensaah/reka/types"
 )
 
 // returns only instance IDs of unprotected ec2 instances
-func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, region string) ([]*types.Resource, error) {
+func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, region string, logger *log.Entry) ([]*types.Resource, error) {
 	var ec2Instances []*types.Resource
 	logger.Debug("Fetching EC2 Details")
 	for _, reservation := range output.Reservations {
@@ -25,7 +26,7 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
 			// To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
 			tags["creation-date"] = (*instance.LaunchTime).String()
-			ec2 := New(*instance.InstanceId)
+			ec2 := NewResource(*instance.InstanceId, ec2Name)
 			ec2.Region = region
 			// Get CreationDate by getting LaunchTime of attached Volume
 			ec2.CreationDate = *instance.LaunchTime
@@ -39,7 +40,7 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 }
 
 // GetAllEC2Instances Get all instances
-func GetAllEC2Instances(cfg aws.Config, region string) ([]*types.Resource, error) {
+func GetAllEC2Instances(cfg aws.Config, region string, logger *log.Entry) ([]*types.Resource, error) {
 	logger.Debug("Fetching EC2 Instances")
 	svc := ec2.New(cfg)
 	params := &ec2.DescribeInstancesInput{}
@@ -52,7 +53,7 @@ func GetAllEC2Instances(cfg aws.Config, region string) ([]*types.Resource, error
 	if err != nil {
 		return nil, err
 	}
-	instances, err := getInstanceDetails(svc, resp, region)
+	instances, err := getInstanceDetails(svc, resp, region, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +62,13 @@ func GetAllEC2Instances(cfg aws.Config, region string) ([]*types.Resource, error
 }
 
 // StopEC2Instances Stop Running Instances
-func StopEC2Instances(cfg aws.Config, instances []*types.Resource) error {
+func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsActive() {
-			instanceIds = append(instanceIds, instance.ID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
@@ -90,14 +91,14 @@ func StopEC2Instances(cfg aws.Config, instances []*types.Resource) error {
 	return err
 }
 
-// StartEC2Instances Start Stopped instances
-func StartEC2Instances(cfg aws.Config, instances []*types.Resource) error {
+// ResumeEC2Instances Resume Stopped instances
+func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsStopped() {
-			instanceIds = append(instanceIds, instance.ID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
@@ -120,13 +121,13 @@ func StartEC2Instances(cfg aws.Config, instances []*types.Resource) error {
 }
 
 // StartEC2Instances Start Stopped instances
-func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource) error {
+func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
 	svc := ec2.New(cfg)
 	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsStopped() || instance.IsActive() {
-			instanceIds = append(instanceIds, instance.ID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
