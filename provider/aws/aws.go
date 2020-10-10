@@ -1,18 +1,25 @@
 package aws
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/provider/aws/ec2"
-	"github.com/mensaah/reka/provider/aws/s3"
 	"github.com/mensaah/reka/types"
 )
 
-const (
-	ProviderName = "aws"
+var (
+	providerName     = "aws"
+	logger           *log.Entry
+	resourceManagers map[string]*types.ResourceManager
 )
+
+func GetName() string {
+	return providerName
+}
 
 func GetConfig() aws.Config {
 	cfg, err := external.LoadDefaultAWSConfig()
@@ -26,24 +33,44 @@ func GetConfig() aws.Config {
 	return cfg
 }
 
+// NewResource Returns a new Resource object
+func NewResource(id, manager string) *types.Resource {
+	resource := types.Resource{}
+	resource.UUID = id
+	resource.Manager = resourceManagers[manager]
+
+	return &resource
+}
+
 // NewProvider : Creates a New AWS Provider
 func NewProvider() (*types.Provider, error) {
 
 	aws := types.Provider{}
-	aws.Name = ProviderName
+	aws.Name = providerName
+
+	logFile := fmt.Sprintf("%s/logger.log", config.GetConfig().LogPath)
+	logger = types.GetLogger(providerName, logFile)
+	// Setup Logger
+	aws.Logger = logger
 
 	// Get and Load AWS Config
 	awsConfig := config.GetAWS()
 	// Set AWS Config
 	awsConfig.Config = GetConfig()
 
-	ec2Manager := ec2.InitManager()
-	s3Manager := s3.InitManager()
+	cfg := config.GetConfig()
 
-	resMgrs := map[string]types.ResourceManager{
-		ec2.Name: &ec2Manager,
-		s3.Name:  &s3Manager,
+	ec2Manager := newEC2Manager(cfg, logFile)
+	s3Manager := newS3Manager(cfg, logFile)
+	fmt.Println("Managers: ", s3Manager, ec2Manager)
+
+	resourceManagers = map[string]*types.ResourceManager{
+		ec2Manager.Name: &ec2Manager,
+		s3Manager.Name:  &s3Manager,
 	}
-	aws.ResourceManagers = resMgrs
+
+	fmt.Println(resourceManagers)
+
+	aws.ResourceManagers = resourceManagers
 	return &aws, nil
 }

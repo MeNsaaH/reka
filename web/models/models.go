@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/mensaah/reka/config"
+	"github.com/mensaah/reka/types"
 )
 
 var db *gorm.DB
@@ -31,6 +32,9 @@ func GetDB() *gorm.DB {
 }
 
 //AutoMigrate runs gorm auto migration
-func AutoMigrate() {
-	db.AutoMigrate(&Task{}, &Resource{})
+func AutoMigrate(providers []*types.Provider) error {
+	var err error
+	db.AutoMigrate(&Task{}, &types.Resource{}, &types.ResourceManager{})
+	err = CreateAllResourceManagers(providers)
+	return err
 }

@@ -52,7 +52,7 @@ type Config struct {
 	Providers  []string
 	staticPath string
 
-	aws *AWSConfig
+	Aws *AWSConfig
 	db  *DatabaseConfig
 
 	// Authentication details set from config
@@ -99,7 +99,8 @@ func LoadConfig() *Config {
 	}
 
 	// Load Configuration
-	config.Providers = []string{"aws"}
+	config.Providers = []string{"aws"} // TODO Remove Test providers init with aws
+
 	config.db = &DatabaseConfig{
 		Type:     viper.GetString("DBType"),
 		Host:     viper.GetString("DbHost"),
@@ -107,7 +108,7 @@ func LoadConfig() *Config {
 		User:     viper.GetString("DbUser"),
 		Password: viper.GetString("DbPassword"),
 	}
-	config.aws = &AWSConfig{}
+	config.Aws = &AWSConfig{}
 	config.RefreshInterval = viper.GetInt32("RefreshInterval")
 	config.LogPath = viper.GetString("LogPath")
 	if _, err := os.Stat(config.LogPath); os.IsNotExist(err) {
@@ -131,7 +132,7 @@ func GetDB() *DatabaseConfig {
 
 // GetAWS Return database config
 func GetAWS() *AWSConfig {
-	return config.aws
+	return config.Aws
 }
 
 //StaticPath returns path to application static folder

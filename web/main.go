@@ -39,10 +39,14 @@ func main() {
 
 	config.LoadConfig()
 	models.SetDB(config.GetDB())
-	models.AutoMigrate()
 
 	// Initialize Provider objects
-	initProviders()
+	providers = initProviders()
+
+	err := models.AutoMigrate(providers)
+	if err != nil {
+		log.Fatal("Database Migration Error: ", err)
+	}
 	initCronJob(config.GetConfig().RefreshInterval)
 
 	// Load Templates
@@ -53,7 +57,7 @@ func main() {
 	router := gin.Default()
 	router.SetHTMLTemplate(controllers.GetTemplates())
 	router.StaticFS("/static", http.Dir(config.StaticPath()))
-	// ter.Use(controllers.ContextData())
+	// router.Use(controllers.ContextData())
 
 	router.GET("/", controllers.HomeGet)
 	// router.NoRoute(controllers.NotFound)
@@ -76,13 +80,14 @@ func initLogger() {
 
 // TODO Add logger to Providers during configuration
 func initProviders() []*types.Provider {
+	var providers []*types.Provider
 	for _, p := range config.GetProviders() {
 		var (
 			provider *types.Provider
 			err      error
 		)
 		switch p {
-		case aws.ProviderName:
+		case aws.GetName():
 			provider, err = aws.NewProvider()
 			if err != nil {
 				log.Fatal("Could not initialize AWS Provider: ", err)
@@ -109,12 +114,17 @@ func initCronJob(frequency int32) {
 func refreshResources(providers []*types.Provider) {
 	for _, provider := range providers {
 		allResources := provider.GetAllResources()
-		log.Info(allResources)
-		destroyableResources := provider.GetDestroyableResources(allResources)
-		save(destroyableResources)
-		stoppableResources := provider.GetStoppableResources(allResources)
-		save(stoppableResources)
-		resumableResources := provider.GetResumableResources(allResources)
-		save(resumableResources)
+
+		for _, resources := range allResources {
+			if len(resources) > 0 {
+				models.CreateOrUpdateResources(resources)
+			}
+		}
+		// destroyableResources := provider.GetDestroyableResources(allResources)
+		// save(destroyableResources)
+		// stoppableResources := provider.GetStoppableResources(allResources)
+		// save(stoppableResources)
+		// resumableResources := provider.GetResumableResources(allResources)
+		// save(resumableResources)
 	}
 }

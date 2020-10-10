@@ -1,4 +1,4 @@
-package s3
+package aws
 
 import (
 	"context"
@@ -9,12 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/s3manager"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/provider/aws/utils"
 	"github.com/mensaah/reka/types"
 )
 
-func getS3BucketRegion(cfg aws.Config, bucketName string) (string, error) {
+func getS3BucketRegion(cfg aws.Config, bucketName string, logger *log.Entry) (string, error) {
 
 	region, err := s3manager.GetBucketRegion(context.Background(), cfg, bucketName, "us-west-2")
 	if err != nil {
@@ -27,7 +28,7 @@ func getS3BucketRegion(cfg aws.Config, bucketName string) (string, error) {
 	return region, err
 }
 
-func getS3BucketTags(svc *s3.Client, bucketName string) (types.ResourceTags, error) {
+func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (types.ResourceTags, error) {
 	logger.Debug("Fetching S3 Tags")
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(bucketName),
@@ -50,22 +51,23 @@ func getS3BucketTags(svc *s3.Client, bucketName string) (types.ResourceTags, err
 }
 
 // returns only s3Bucket IDs of unprotected s3 instances
-func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsResponse) ([]*types.Resource, error) {
+func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsResponse, logger *log.Entry) ([]*types.Resource, error) {
 	var s3Buckets []*types.Resource
 	for _, s3Bucket := range output.Buckets {
 		// Get tags
-		tags, err := getS3BucketTags(svc, *s3Bucket.Name)
+		tags, err := getS3BucketTags(svc, *s3Bucket.Name, logger)
 		if err != nil {
 			logger.Error(err)
 		}
 		tags["creation-date"] = (*s3Bucket.CreationDate).String()
 		// Get region
-		s3Region, err := getS3BucketRegion(cfg, *s3Bucket.Name)
+		s3Region, err := getS3BucketRegion(cfg, *s3Bucket.Name, logger)
 		if err != nil {
 			logger.Errorf("Could not get region for Bucket %s", *s3Bucket.Name)
 			continue
 		}
-		s3 := New(*s3Bucket.Name)
+		s3 := NewResource(*s3Bucket.Name, s3Name)
+		s3.State = types.Running
 		s3.Region = s3Region
 		// Get CreationDate by getting LaunchTime of attached Volume
 		s3.CreationDate = *s3Bucket.CreationDate
@@ -79,7 +81,7 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsR
 }
 
 // GetAllS3Buckets Get all s3Buckets
-func getAllS3Buckets(cfg aws.Config) ([]*types.Resource, error) {
+func getAllS3Buckets(cfg aws.Config, logger *log.Entry) ([]*types.Resource, error) {
 	logger.Debug("Fetching S3 Buckets")
 	svc := s3.New(cfg)
 	params := &s3.ListBucketsInput{}
@@ -92,7 +94,7 @@ func getAllS3Buckets(cfg aws.Config) ([]*types.Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	buckets, err := getS3BucketsDetails(svc, cfg, resp)
+	buckets, err := getS3BucketsDetails(svc, cfg, resp, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +102,9 @@ func getAllS3Buckets(cfg aws.Config) ([]*types.Resource, error) {
 }
 
 // Destroys a Single Bucket
-func destroyBucket(svc *s3.Client, bucket *types.Resource) error {
+func destroyBucket(svc *s3.Client, bucket *types.Resource, logger *log.Entry) error {
 	input := &s3.DeleteBucketInput{
-		Bucket: aws.String(bucket.ID),
+		Bucket: aws.String(bucket.UUID),
 	}
 
 	req := svc.DeleteBucketRequest(input)
@@ -120,7 +122,7 @@ func destroyBucket(svc *s3.Client, bucket *types.Resource) error {
 	return nil
 }
 
-func destroyS3Buckets(cfg aws.Config, s3Buckets []*types.Resource) error {
+func destroyS3Buckets(cfg aws.Config, s3Buckets []*types.Resource, logger *log.Entry) error {
 	bucketsPerRegion := make(map[string][]*types.Resource)
 	delCount := 0
 	if len(s3Buckets) <= 0 {
@@ -136,9 +138,9 @@ func destroyS3Buckets(cfg aws.Config, s3Buckets []*types.Resource) error {
 		svc := s3.New(cfg)
 		svc.Client.Config.Region = region
 		for _, bucket := range buckets {
-			err := destroyBucket(svc, bucket)
+			err := destroyBucket(svc, bucket, logger)
 			if err != nil {
-				logger.Errorf("Failed to delete Bucket %s - Error %s ", bucket.ID, err.Error())
+				logger.Errorf("Failed to delete Bucket %d - Error %s ", bucket.ID, err.Error())
 				bucket.DestroyError = err
 			} else {
 				delCount++
