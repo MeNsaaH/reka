@@ -62,14 +62,11 @@ func NewProvider() (*types.Provider, error) {
 
 	ec2Manager := newEC2Manager(cfg, logFile)
 	s3Manager := newS3Manager(cfg, logFile)
-	fmt.Println("Managers: ", s3Manager, ec2Manager)
 
 	resourceManagers = map[string]*types.ResourceManager{
 		ec2Manager.Name: &ec2Manager,
 		s3Manager.Name:  &s3Manager,
 	}
-
-	fmt.Println(resourceManagers)
 
 	aws.ResourceManagers = resourceManagers
 	return &aws, nil

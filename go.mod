@@ -8,6 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-co-op/gocron v0.3.1
 	github.com/jinzhu/now v1.1.1
+	github.com/labstack/gommon v0.3.0
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.7.0
