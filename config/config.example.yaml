@@ -1,0 +1,18 @@
+# Config variables for the Reka application. These variables can also be set from environment with
+# the reka namespace
+# Example:
+# name => REKA_NAME
+# refreshInterval => REKA_REFRESHINTERVAL
+# auth.username => REKA_AUTH_USERNAME
+
+name: reka
+# Providers to be enabled for reka
+providers:
+  - aws
+# logPath: logs/
+refreshInterval: 1
+# auth:
+#   username: blank   # Can 
+#   password: blank
+database:
+  type: sqlite

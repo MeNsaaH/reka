@@ -8,9 +8,9 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 
 ### TODO
 - [x] Bootstrap application architecture
-- [x] get resources with specified tags for destruction
-- [ ] Schedule resource refreshing
+- [x] Schedule resource refreshing
 - [ ] Create Web Dashboard 
+- [ ] generate Sample Yaml config and load config
 - [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
 - [ ] Support Manual Trigger of resources reaping from Dashboard/CLI
 - [ ] Allow authentication username and password set in config file
