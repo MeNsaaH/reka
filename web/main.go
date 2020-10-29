@@ -22,6 +22,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 
 	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/provider/aws"
@@ -36,7 +38,12 @@ var (
 )
 
 func main() {
+	// Parse Command Line Arguments
+	pflag.String("config", "", "Path to config file")
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
 
+	// Load Config and Defaults
 	config.LoadConfig()
 	models.SetDB(config.GetDB())
 

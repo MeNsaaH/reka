@@ -11,6 +11,7 @@ require (
 	github.com/labstack/gommon v0.3.0
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.7.0
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect

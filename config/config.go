@@ -2,11 +2,13 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -20,25 +22,27 @@ const (
 	appName = "REKA"
 )
 
-// AWSConfig Related Configurations
-type AWSConfig struct {
+// AwsConfig Related Configurations
+type AwsConfig struct {
 	// AWS Configs
-	Config        aws.Config
-	DefaultRegion string
+	Config          aws.Config
+	AccessKey       string `yaml:"accessKey"`
+	SecretAccessKey string `yaml:"secretAccessKey"`
+	DefaultRegion   string `yaml:"defaultRegion"`
 }
 
 // DatabaseConfig Config for Dabatabase
 type DatabaseConfig struct {
-	Host     string
-	Name     string //database name
-	User     string
-	Password string
-	Type     string
+	Type     string `yaml:"type"`
+	Name     string `yaml:"name"`
+	Host     string `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 }
 
 // GetConnectionString the connection string  for database
 func (db *DatabaseConfig) GetConnectionString() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", config.db.Host, config.db.User, config.db.Password, config.db.Name)
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", db.Host, db.User, db.Password, db.Name)
 }
 
 // SqliteDefaultPath the default database path to use for sqlite
@@ -48,21 +52,19 @@ func (db *DatabaseConfig) SqliteDefaultPath() string {
 
 // Config : The Config values passed to application
 type Config struct {
-	// A list of supported providers to be enabled
-	Providers  []string
-	staticPath string
+	Name            string          `yaml:"name"`
+	Providers       []string        `yaml:"providers"`
+	Database        *DatabaseConfig `yaml:"database"`
+	Aws             *AwsConfig      `yaml:"aws"`
+	RefreshInterval int32           `yaml:"refreshInterval"`
+	LogPath         string          `yaml:"logPath"`
 
-	Aws *AWSConfig
-	db  *DatabaseConfig
+	Auth struct {
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	} `yaml:"auth"`
 
-	// Authentication details set from config
-	Username string
-	Password string
-
-	// RefreshInterval in hours
-	RefreshInterval int32
-	// LogPath
-	LogPath string
+	staticPath string // Path to Static File
 }
 
 // LoadConfig load all passed configs and defaults
@@ -72,51 +74,72 @@ func LoadConfig() *Config {
 		panic(err)
 	}
 
-	viper.SetEnvPrefix(appName) // will be uppercased automatically
-	viper.SetConfigName("reka") // name of config file (without extension)
-	viper.SetConfigType("yaml") // REQUIRED if the config file does not have the extension in the name
-
-	// If REKA_CONFIG_FILE is set load config from that
-	viper.AddConfigPath(viper.GetString("ConfigFile"))
-	err = viper.ReadInConfig() // Find and read the config file
-	if err != nil {
-		// panic(fmt.Errorf("Fatal error config file: %s", err))
-		fmt.Errorf("Fatal error config file: %s", err)
-	}
-
+	viper.SetEnvPrefix(appName)
+	viper.AutomaticEnv() // Load Variables from Environment with REKA prefix
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	// Defaults
 	viper.SetDefault("StaticPath", "web/static")
-	viper.SetDefault("DbType", "sqlite") // Default Database type is sqlite
+	// viper.SetDefault("DbType", "sqlite") // Default Database type is sqlite
 	viper.SetDefault("LogPath", path.Join(workingDir, "logs"))
 	viper.SetDefault("RefreshInterval", 4) // interval between running refresh and checking for resources to updates
 
-	staticPath := viper.GetString("StaticPath")
+	// Load Config file
+	if configPath := viper.GetString("Config"); configPath != "" {
+		dir, file := filepath.Split(configPath)
+		viper.SetConfigName(file)   // name of config file (without extension)
+		viper.SetConfigType("yaml") // REQUIRED if the config file does not have the extension in the name
+		// If REKA_CONFIG_FILE is set load config from that
+		viper.AddConfigPath(dir)
+		if err := viper.ReadInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				// Config file not found; ignore error if desired
+				log.Fatalf("error: %s. Consider passing the `--config` variable or settings %s_CONFIG environment", err, appName)
+
+			} else {
+				// Config file was found but another error was produced
+				log.Fatalf("Error: %s", err)
+			}
+		}
+	}
 
 	config = &Config{}
 
+	staticPath := viper.GetString("StaticPath")
 	if !path.IsAbs(staticPath) {
 		config.staticPath = path.Join(workingDir, staticPath)
 	}
 
-	// Load Configuration
-	config.Providers = []string{"aws"} // TODO Remove Test providers init with aws
-
-	config.db = &DatabaseConfig{
-		Type:     viper.GetString("DBType"),
-		Host:     viper.GetString("DbHost"),
-		Name:     viper.GetString("DbName"),
-		User:     viper.GetString("DbUser"),
-		Password: viper.GetString("DbPassword"),
+	config.Providers = viper.GetStringSlice("Providers")
+	if len(config.Providers) < 1 {
+		log.Fatal("No providers specified. Reka needs atleast one provider to track")
 	}
-	config.Aws = &AWSConfig{}
+
+	config.Auth.Username = viper.GetString("Auth.Username")
+	config.Auth.Password = viper.GetString("Auth.Password")
+
+	config.Database = &DatabaseConfig{
+		Type:     viper.GetString("Database.Type"),
+		Host:     viper.GetString("Database.Host"),
+		Name:     viper.GetString("Database.Name"),
+		User:     viper.GetString("Database.User"),
+		Password: viper.GetString("Database.Password"),
+	}
+	config.Aws = &AwsConfig{}
 	config.RefreshInterval = viper.GetInt32("RefreshInterval")
+
 	config.LogPath = viper.GetString("LogPath")
+	if !path.IsAbs(config.LogPath) {
+		config.LogPath = path.Join(workingDir, staticPath)
+	}
+	// Create the Logs directory if it does not exists
 	if _, err := os.Stat(config.LogPath); os.IsNotExist(err) {
 		err = os.Mkdir(config.LogPath, os.ModePerm)
 		if err != nil {
 			log.Fatal("Could not create log path: ", err)
 		}
 	}
+
+	fmt.Println(config.Auth)
 	return config
 }
 
@@ -127,11 +150,11 @@ func GetConfig() *Config {
 
 // GetDB Return database config
 func GetDB() *DatabaseConfig {
-	return config.db
+	return config.Database
 }
 
 // GetAWS Return database config
-func GetAWS() *AWSConfig {
+func GetAWS() *AwsConfig {
 	return config.Aws
 }
 
