@@ -2,13 +2,14 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"unsafe"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/s3manager"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/provider/aws/utils"
@@ -17,9 +18,12 @@ import (
 
 func getS3BucketRegion(cfg aws.Config, bucketName string, logger *log.Entry) (string, error) {
 
-	region, err := s3manager.GetBucketRegion(context.Background(), cfg, bucketName, "us-west-2")
+	region, err := s3manager.GetBucketRegion(context.Background(), s3.NewFromConfig(cfg), bucketName)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "NotFound" {
+		var notFoundErr *s3Types.NoSuchBucket
+		if errors.As(err, &notFoundErr) {
+			log.Printf("scan failed because the table was not found, %v",
+				notFoundErr.ErrorMessage())
 			return "", fmt.Errorf("unable to find bucket %s's region not found", bucketName)
 		}
 		return "", err
@@ -34,15 +38,8 @@ func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (type
 		Bucket: aws.String(bucketName),
 	}
 
-	req := svc.GetBucketTaggingRequest(input)
-	result, err := req.Send(context.Background())
+	result, err := svc.GetBucketTagging(context.Background(), input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				return types.ResourceTags{}, aerr
-			}
-		}
 		return types.ResourceTags{}, err
 	}
 	// https://stackoverflow.com/a/48554123/7167357
@@ -51,7 +48,7 @@ func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (type
 }
 
 // returns only s3Bucket IDs of unprotected s3 instances
-func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsResponse, logger *log.Entry) ([]*types.Resource, error) {
+func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsOutput, logger *log.Entry) ([]*types.Resource, error) {
 	var s3Buckets []*types.Resource
 	for _, s3Bucket := range output.Buckets {
 		// Get tags
@@ -83,14 +80,11 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsR
 // GetAllS3Buckets Get all s3Buckets
 func getAllS3Buckets(cfg aws.Config, logger *log.Entry) ([]*types.Resource, error) {
 	logger.Debug("Fetching S3 Buckets")
-	svc := s3.New(cfg)
+	svc := s3.NewFromConfig(cfg)
 	params := &s3.ListBucketsInput{}
 
 	// Build the request with its input parameters
-	req := svc.ListBucketsRequest(params)
-
-	// Send the request, and get the response or error back
-	resp, err := req.Send(context.Background())
+	resp, err := svc.ListBuckets(context.Background(), params)
 	if err != nil {
 		return nil, err
 	}
@@ -107,15 +101,8 @@ func destroyBucket(svc *s3.Client, bucket *types.Resource, logger *log.Entry) er
 		Bucket: aws.String(bucket.UUID),
 	}
 
-	req := svc.DeleteBucketRequest(input)
-	_, err := req.Send(context.Background())
+	_, err := svc.DeleteBucket(context.Background(), input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				return aerr
-			}
-		}
 		return err
 	}
 
@@ -135,8 +122,9 @@ func destroyS3Buckets(cfg aws.Config, s3Buckets []*types.Resource, logger *log.E
 
 	// TODO Use Goroutines
 	for region, buckets := range bucketsPerRegion {
-		svc := s3.New(cfg)
-		svc.Client.Config.Region = region
+		svc := s3.NewFromConfig(cfg, func(options *s3.Options) {
+			options.Region = region
+		})
 		for _, bucket := range buckets {
 			err := destroyBucket(svc, bucket, logger)
 			if err != nil {

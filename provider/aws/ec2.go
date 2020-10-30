@@ -14,7 +14,7 @@ import (
 )
 
 // returns only instance IDs of unprotected ec2 instances
-func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, region string, logger *log.Entry) ([]*types.Resource, error) {
+func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, region string, logger *log.Entry) ([]*types.Resource, error) {
 	var ec2Instances []*types.Resource
 	logger.Debug("Fetching EC2 Details")
 	for _, reservation := range output.Reservations {
@@ -42,14 +42,12 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesResponse, 
 // GetAllEC2Instances Get all instances
 func GetAllEC2Instances(cfg aws.Config, region string, logger *log.Entry) ([]*types.Resource, error) {
 	logger.Debug("Fetching EC2 Instances")
-	svc := ec2.New(cfg)
+	svc := ec2.NewFromConfig(cfg)
 	params := &ec2.DescribeInstancesInput{}
 
 	// Build the request with its input parameters
-	req := svc.DescribeInstancesRequest(params)
+	resp, err := svc.DescribeInstances(context.Background(), params)
 
-	// Send the request, and get the response or error back
-	resp, err := req.Send(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +61,12 @@ func GetAllEC2Instances(cfg aws.Config, region string, logger *log.Entry) ([]*ty
 
 // StopEC2Instances Stop Running Instances
 func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
-	svc := ec2.New(cfg)
-	var instanceIds []string
+	svc := ec2.NewFromConfig(cfg)
+	var instanceIds []*string
 
 	for _, instance := range instances {
 		if instance.IsActive() {
-			instanceIds = append(instanceIds, instance.UUID)
+			instanceIds = append(instanceIds, &instance.UUID)
 		}
 	}
 
@@ -82,8 +80,7 @@ func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.E
 		InstanceIds: instanceIds,
 	}
 
-	req := svc.StopInstancesRequest(params)
-	resp, err := req.Send(context.Background())
+	resp, err := svc.StopInstances(context.Background(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)
@@ -93,12 +90,12 @@ func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.E
 
 // ResumeEC2Instances Resume Stopped instances
 func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
-	svc := ec2.New(cfg)
-	var instanceIds []string
+	svc := ec2.NewFromConfig(cfg)
+	var instanceIds []*string
 
 	for _, instance := range instances {
 		if instance.IsStopped() {
-			instanceIds = append(instanceIds, instance.UUID)
+			instanceIds = append(instanceIds, &instance.UUID)
 		}
 	}
 
@@ -111,8 +108,7 @@ func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log
 	}
 	logger.Debug("Starting EC2 Instances ", instanceIds, " ...")
 
-	req := svc.StartInstancesRequest(params)
-	resp, err := req.Send(context.Background())
+	resp, err := svc.StartInstances(context.Background(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)
@@ -120,14 +116,14 @@ func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log
 	return err
 }
 
-// StartEC2Instances Start Stopped instances
+// TerminateEC2Instances Shutdown instances
 func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
-	svc := ec2.New(cfg)
-	var instanceIds []string
+	svc := ec2.NewFromConfig(cfg)
+	var instanceIds []*string
 
 	for _, instance := range instances {
 		if instance.IsStopped() || instance.IsActive() {
-			instanceIds = append(instanceIds, instance.UUID)
+			instanceIds = append(instanceIds, &instance.UUID)
 		}
 	}
 
@@ -141,8 +137,7 @@ func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource, logger *
 		InstanceIds: instanceIds,
 	}
 
-	req := svc.TerminateInstancesRequest(params)
-	resp, err := req.Send(context.Background())
+	resp, err := svc.TerminateInstances(context.Background(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)

@@ -5,7 +5,7 @@ import (
 )
 
 // GetResourceState Get the current status of Resource: Pending, Running, ... Stopped
-func GetResourceState(s int64) types.State {
+func GetResourceState(s int32) types.State {
 	switch s {
 	case 0:
 		return types.Pending

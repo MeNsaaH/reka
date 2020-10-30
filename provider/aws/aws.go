@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
+	awsCfg "github.com/aws/aws-sdk-go-v2/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
@@ -22,7 +22,7 @@ func GetName() string {
 }
 
 func GetConfig() aws.Config {
-	cfg, err := external.LoadDefaultAWSConfig()
+	cfg, err := awsCfg.LoadDefaultConfig()
 	if err != nil {
 		panic("unable to load SDK config, " + err.Error())
 	}

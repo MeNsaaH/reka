@@ -3,10 +3,16 @@ module github.com/mensaah/reka
 go 1.14
 
 require (
-	github.com/aws/aws-sdk-go-v2 v0.23.0
+	github.com/aws/aws-sdk-go-v2 v0.28.0
+	github.com/aws/aws-sdk-go-v2/config v0.2.1
+	github.com/aws/aws-sdk-go-v2/credentials v0.1.3
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v0.1.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v0.28.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v0.28.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-co-op/gocron v0.3.1
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/jinzhu/now v1.1.1
 	github.com/labstack/gommon v0.3.0
 	github.com/pelletier/go-toml v1.8.1 // indirect

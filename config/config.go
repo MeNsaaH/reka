@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -22,22 +21,13 @@ const (
 	appName = "REKA"
 )
 
-// AwsConfig Related Configurations
-type AwsConfig struct {
-	// AWS Configs
-	Config          aws.Config
-	AccessKey       string `yaml:"accessKey"`
-	SecretAccessKey string `yaml:"secretAccessKey"`
-	DefaultRegion   string `yaml:"defaultRegion"`
-}
-
 // DatabaseConfig Config for Dabatabase
 type DatabaseConfig struct {
-	Type     string `yaml:"type"`
-	Name     string `yaml:"name"`
-	Host     string `yaml:"host"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
+	Type     string
+	Name     string
+	Host     string
+	User     string
+	Password string
 }
 
 // GetConnectionString the connection string  for database
@@ -52,17 +42,18 @@ func (db *DatabaseConfig) SqliteDefaultPath() string {
 
 // Config : The Config values passed to application
 type Config struct {
-	Name            string          `yaml:"name"`
-	Providers       []string        `yaml:"providers"`
-	Database        *DatabaseConfig `yaml:"database"`
-	Aws             *AwsConfig      `yaml:"aws"`
-	RefreshInterval int32           `yaml:"refreshInterval"`
-	LogPath         string          `yaml:"logPath"`
+	Name            string
+	Providers       []string
+	Database        *DatabaseConfig
+	Aws             *AwsConfig
+	RefreshInterval int32
+	LogPath         string
 
+	// Authentication Details to login to Reka
 	Auth struct {
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"auth"`
+		Username string
+		Password string
+	}
 
 	staticPath string // Path to Static File
 }
@@ -139,7 +130,6 @@ func LoadConfig() *Config {
 		}
 	}
 
-	fmt.Println(config.Auth)
 	return config
 }
 
