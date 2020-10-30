@@ -23,17 +23,16 @@ func newEC2Manager(cfg *config.Config, logPath string) types.ResourceManager {
 		Config:   cfg,
 		Logger:   logger,
 		GetAll: func() ([]*types.Resource, error) {
-			region := "us-east-2"
-			return GetAllEC2Instances(cfg.Aws.Config, region, logger)
+			return GetAllEC2Instances(*cfg.Aws, logger)
 		},
 		Destroy: func(resources []*types.Resource) error {
-			return TerminateEC2Instances(cfg.Aws.Config, resources, logger)
+			return TerminateEC2Instances(*cfg.Aws, resources, logger)
 		},
 		Stop: func(resources []*types.Resource) error {
-			return StopEC2Instances(cfg.Aws.Config, resources, logger)
+			return StopEC2Instances(*cfg.Aws, resources, logger)
 		},
 		Resume: func(resources []*types.Resource) error {
-			return ResumeEC2Instances(cfg.Aws.Config, resources, logger)
+			return ResumeEC2Instances(*cfg.Aws, resources, logger)
 		},
 	}
 	return ec2Manager

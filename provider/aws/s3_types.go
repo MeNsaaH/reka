@@ -22,10 +22,10 @@ func newS3Manager(cfg *config.Config, logPath string) types.ResourceManager {
 		Config:   cfg,
 		Logger:   logger,
 		GetAll: func() ([]*types.Resource, error) {
-			return getAllS3Buckets(cfg.Aws.Config, logger)
+			return getAllS3Buckets(*cfg.Aws, logger)
 		},
 		Destroy: func(resources []*types.Resource) error {
-			return destroyS3Buckets(cfg.Aws.Config, resources, logger)
+			return destroyS3Buckets(*cfg.Aws, resources, logger)
 		},
 	}
 }
