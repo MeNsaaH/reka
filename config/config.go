@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -45,7 +46,7 @@ type Config struct {
 	Name            string
 	Providers       []string
 	Database        *DatabaseConfig
-	Aws             *AwsConfig
+	Aws             *aws.Config
 	RefreshInterval int32
 	LogPath         string
 
@@ -72,7 +73,8 @@ func LoadConfig() *Config {
 	viper.SetDefault("StaticPath", "web/static")
 	// viper.SetDefault("DbType", "sqlite") // Default Database type is sqlite
 	viper.SetDefault("LogPath", path.Join(workingDir, "logs"))
-	viper.SetDefault("RefreshInterval", 4) // interval between running refresh and checking for resources to updates
+	viper.SetDefault("RefreshInterval", 4)             // interval between running refresh and checking for resources to updates
+	viper.SetDefault("aws.DefaultRegion", "us-east-2") // Default AWS Region for users https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-region.html
 
 	// Load Config file
 	if configPath := viper.GetString("Config"); configPath != "" {
@@ -115,7 +117,10 @@ func LoadConfig() *Config {
 		User:     viper.GetString("Database.User"),
 		Password: viper.GetString("Database.Password"),
 	}
-	config.Aws = &AwsConfig{}
+
+	awsConfig := loadAwsConfig(viper.GetString("aws.AccessKeyID"), viper.GetString("aws.SecretAccessKey"), viper.GetString("aws.DefaultRegion"))
+	config.Aws = &awsConfig
+
 	config.RefreshInterval = viper.GetInt32("RefreshInterval")
 
 	config.LogPath = viper.GetString("LogPath")
@@ -144,7 +149,7 @@ func GetDB() *DatabaseConfig {
 }
 
 // GetAWS Return database config
-func GetAWS() *AwsConfig {
+func GetAWS() *aws.Config {
 	return config.Aws
 }
 

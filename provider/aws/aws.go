@@ -3,8 +3,6 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awsCfg "github.com/aws/aws-sdk-go-v2/config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
@@ -19,18 +17,6 @@ var (
 
 func GetName() string {
 	return providerName
-}
-
-func GetConfig() aws.Config {
-	cfg, err := awsCfg.LoadDefaultConfig()
-	if err != nil {
-		panic("unable to load SDK config, " + err.Error())
-	}
-
-	// Set the AWS Region that the service clients should use
-	//  cfg.Region = endpoints.UsEast2RegionID
-	cfg.Region = "us-east-2"
-	return cfg
 }
 
 // NewResource Returns a new Resource object
@@ -52,11 +38,6 @@ func NewProvider() (*types.Provider, error) {
 	logger = types.GetLogger(providerName, logFile)
 	// Setup Logger
 	aws.Logger = logger
-
-	// Get and Load AWS Config
-	awsConfig := config.GetAWS()
-	// Set AWS Config
-	awsConfig.Config = GetConfig()
 
 	cfg := config.GetConfig()
 

@@ -8,20 +8,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// AwsConfig Related Configurations
-type AwsConfig struct {
-	// AWS Configs
-	Config          aws.Config
-	AccessKeyID     string
-	SecretAccessKey string
-	DefaultRegion   string
-}
-
 func loadAwsConfig(accessKeyID, secretAccessKey, defaultRegion string) aws.Config {
 	var (
 		err error
 		cfg aws.Config
 	)
+
 	if accessKeyID != "" && secretAccessKey != "" {
 		cfg, err = awsCfg.LoadDefaultConfig(
 			awsCfg.WithCredentialsProvider(credentials.StaticCredentialsProvider{
@@ -33,6 +25,7 @@ func loadAwsConfig(accessKeyID, secretAccessKey, defaultRegion string) aws.Confi
 	} else {
 		cfg, err = awsCfg.LoadDefaultConfig(awsCfg.WithRegion(defaultRegion))
 	}
+
 	if err != nil {
 		log.Fatal(err)
 	}

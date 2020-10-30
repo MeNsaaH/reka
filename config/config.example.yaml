@@ -18,11 +18,9 @@ database:
   type: sqlite
 
 aws:
-  # Env: Access Key ID
-  #	AWS_SECRET_ACCESS_KEY=SECRET
+  # Env: AWS_SECRET_ACCESS_KEY
   secretAccessKey: blank
-  # Secret Access Key
-  #	AWS_ACCESS_KEY_ID=AKID
+  # ENV: AWS_ACCESS_KEY_ID
   accessKeyID: blank
-  #	AWS_REGION=blank
+  # ENV: AWS_REGION
   defaultRegion: us-east-2

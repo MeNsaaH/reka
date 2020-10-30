@@ -40,8 +40,9 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, re
 }
 
 // GetAllEC2Instances Get all instances
-func GetAllEC2Instances(cfg aws.Config, region string, logger *log.Entry) ([]*types.Resource, error) {
+func GetAllEC2Instances(cfg aws.Config, logger *log.Entry) ([]*types.Resource, error) {
 	logger.Debug("Fetching EC2 Instances")
+
 	svc := ec2.NewFromConfig(cfg)
 	params := &ec2.DescribeInstancesInput{}
 
@@ -51,7 +52,7 @@ func GetAllEC2Instances(cfg aws.Config, region string, logger *log.Entry) ([]*ty
 	if err != nil {
 		return nil, err
 	}
-	instances, err := getInstanceDetails(svc, resp, region, logger)
+	instances, err := getInstanceDetails(svc, resp, cfg.Region, logger)
 	if err != nil {
 		return nil, err
 	}
