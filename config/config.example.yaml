@@ -16,3 +16,13 @@ refreshInterval: 1
 #   password: blank
 database:
   type: sqlite
+
+aws:
+  # Env: Access Key ID
+  #	AWS_SECRET_ACCESS_KEY=SECRET
+  secretAccessKey: blank
+  # Secret Access Key
+  #	AWS_ACCESS_KEY_ID=AKID
+  accessKeyID: blank
+  #	AWS_REGION=blank
+  defaultRegion: us-east-2

@@ -18,3 +18,4 @@
 # tmp builds by air
 tmp
 logs
+config/config.yaml

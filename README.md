@@ -23,10 +23,13 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 
 
 ## Development
+Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary changes
 ```bash
-# Web UI
+cp config/config.example.yaml config/config.yaml
+
+# Start Web UI
 cd web
-go run main.go
+go run main.go --config ../config/config.yaml
 ```
 
 using [air](https://github.com/cosmtrek/air) with autoreload UI features
