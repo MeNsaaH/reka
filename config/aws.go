@@ -21,7 +21,7 @@ func loadAwsConfig(accessKeyID, secretAccessKey, defaultRegion string) aws.Confi
 					AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey,
 					Source: "Reka Variables",
 				},
-			}))
+			}), awsCfg.WithRegion(defaultRegion))
 	} else {
 		cfg, err = awsCfg.LoadDefaultConfig(awsCfg.WithRegion(defaultRegion))
 	}
