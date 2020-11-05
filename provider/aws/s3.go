@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/provider/aws/utils"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/resource"
 )
 
 func getS3BucketRegion(cfg aws.Config, bucketName string, logger *log.Entry) (string, error) {
@@ -32,7 +32,7 @@ func getS3BucketRegion(cfg aws.Config, bucketName string, logger *log.Entry) (st
 	return region, err
 }
 
-func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (types.ResourceTags, error) {
+func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (resource.Tags, error) {
 	logger.Debug("Fetching S3 Tags")
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(bucketName),
@@ -40,16 +40,16 @@ func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (type
 
 	result, err := svc.GetBucketTagging(context.Background(), input)
 	if err != nil {
-		return types.ResourceTags{}, err
+		return resource.Tags{}, err
 	}
 	// https://stackoverflow.com/a/48554123/7167357
-	tags := utils.ParseResourceTags(*(*[]utils.AWSTag)(unsafe.Pointer(&result.TagSet)))
+	tags := utils.ParseTags(*(*[]utils.AWSTag)(unsafe.Pointer(&result.TagSet)))
 	return tags, nil
 }
 
 // returns only s3Bucket IDs of unprotected s3 instances
-func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsOutput, logger *log.Entry) ([]*types.Resource, error) {
-	var s3Buckets []*types.Resource
+func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsOutput, logger *log.Entry) ([]*resource.Resource, error) {
+	var s3Buckets []*resource.Resource
 	for _, s3Bucket := range output.Buckets {
 		// Get tags
 		tags, err := getS3BucketTags(svc, *s3Bucket.Name, logger)
@@ -64,7 +64,7 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsO
 			continue
 		}
 		s3 := NewResource(*s3Bucket.Name, s3Name)
-		s3.State = types.Running
+		s3.State = resource.Running
 		s3.Region = s3Region
 		// Get CreationDate by getting LaunchTime of attached Volume
 		s3.CreationDate = *s3Bucket.CreationDate
@@ -78,7 +78,7 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsO
 }
 
 // GetAllS3Buckets Get all s3Buckets
-func getAllS3Buckets(cfg aws.Config, logger *log.Entry) ([]*types.Resource, error) {
+func getAllS3Buckets(cfg aws.Config, logger *log.Entry) ([]*resource.Resource, error) {
 	logger.Debug("Fetching S3 Buckets")
 	svc := s3.NewFromConfig(cfg)
 	params := &s3.ListBucketsInput{}
@@ -96,7 +96,7 @@ func getAllS3Buckets(cfg aws.Config, logger *log.Entry) ([]*types.Resource, erro
 }
 
 // Destroys a Single Bucket
-func destroyBucket(svc *s3.Client, bucket *types.Resource, logger *log.Entry) error {
+func destroyBucket(svc *s3.Client, bucket *resource.Resource, logger *log.Entry) error {
 	input := &s3.DeleteBucketInput{
 		Bucket: aws.String(bucket.UUID),
 	}
@@ -109,8 +109,8 @@ func destroyBucket(svc *s3.Client, bucket *types.Resource, logger *log.Entry) er
 	return nil
 }
 
-func destroyS3Buckets(cfg aws.Config, s3Buckets []*types.Resource, logger *log.Entry) error {
-	bucketsPerRegion := make(map[string][]*types.Resource)
+func destroyS3Buckets(cfg aws.Config, s3Buckets []*resource.Resource, logger *log.Entry) error {
+	bucketsPerRegion := make(map[string][]*resource.Resource)
 	delCount := 0
 	if len(s3Buckets) <= 0 {
 		return nil

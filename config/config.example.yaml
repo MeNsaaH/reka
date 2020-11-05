@@ -24,3 +24,51 @@ aws:
   accessKeyID: blank
   # ENV: AWS_REGION
   defaultRegion: us-east-2
+
+exclude:
+  - name: Exclude resources with prod tags in us-east-2
+    region: "us-east-2"
+    tags:
+      env: prod
+  - name: Exclude EC2 Instances
+    region: "us-east-2"
+    resources:
+      - aws.ec2
+
+# Rules for stopping, resuming and terminating instances
+rules:
+  - name: Pause all staging instances on a weekend (staging)
+    tags:
+      env: staging
+    condition:
+      activeDuration: 
+        startTime: "8:00"
+        stopTime: "18:00"
+        startDay: Monday
+        stopDay: Friday
+      region: "us-east-2"
+  - name: Delete all tests instances older than 24hrs (test)
+    tags:
+      env: test
+      ci: true
+    condition:
+      terminationPolicy: older than 24hrs
+  - name: Nuke all project A instances after Demo october 9th (staging)
+    tags:
+      env: staging
+      project: A
+    condition:
+      terminationDate: october 9
+    action: terminate
+  - name: Delete all unused instances older than 48hrs (staging)
+    tags:
+      env: staging
+    condition:
+      terminationPolicy:
+        - unused
+        - older than 48hrs
+    action: terminate
+
+
+timezone: Africa/Lagos
+# timezone: UTC+1

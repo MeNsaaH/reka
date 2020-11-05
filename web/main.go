@@ -16,8 +16,10 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
+	"unsafe"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron"
@@ -26,14 +28,15 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/mensaah/reka/config"
+	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/rules"
 	"github.com/mensaah/reka/web/controllers"
 	"github.com/mensaah/reka/web/models"
 )
 
 var (
-	providers []*types.Provider
+	providers []*provider.Provider
 	scheduler *gocron.Scheduler
 )
 
@@ -46,6 +49,12 @@ func main() {
 	// Load Config and Defaults
 	config.LoadConfig()
 	models.SetDB(config.GetDB())
+
+	cfg := config.GetConfig()
+
+	for _, rule := range cfg.Rules {
+		rules.ParseRule(*((*rules.Rule)(unsafe.Pointer(&rule))))
+	}
 
 	// Initialize Provider objects
 	providers = initProviders()
@@ -87,11 +96,11 @@ func initLogger() {
 }
 
 // TODO Add logger to Providers during configuration
-func initProviders() []*types.Provider {
-	var providers []*types.Provider
+func initProviders() []*provider.Provider {
+	var providers []*provider.Provider
 	for _, p := range config.GetProviders() {
 		var (
-			provider *types.Provider
+			provider *provider.Provider
 			err      error
 		)
 		switch p {
@@ -119,7 +128,7 @@ func initCronJob(frequency int32) {
 }
 
 // Refresh current status of resources from Providers
-func refreshResources(providers []*types.Provider) {
+func refreshResources(providers []*provider.Provider) {
 	for _, provider := range providers {
 		allResources := provider.GetAllResources()
 
@@ -128,8 +137,8 @@ func refreshResources(providers []*types.Provider) {
 				models.CreateOrUpdateResources(resources)
 			}
 		}
-		// destroyableResources := provider.GetDestroyableResources(allResources)
-		// save(destroyableResources)
+		destroyableResources := provider.GetDestroyableResources(allResources)
+		fmt.Println(destroyableResources)
 		// stoppableResources := provider.GetStoppableResources(allResources)
 		// save(stoppableResources)
 		// resumableResources := provider.GetResumableResources(allResources)

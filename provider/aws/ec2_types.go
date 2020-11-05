@@ -2,10 +2,10 @@ package aws
 
 import (
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/resource"
 )
 
-var ec2Manager types.ResourceManager
+var ec2Manager resource.Manager
 
 const (
 	// Name of resource
@@ -14,24 +14,24 @@ const (
 	ec2LongName = "Elastic Compute Cloud"
 )
 
-func newEC2Manager(cfg *config.Config, logPath string) types.ResourceManager {
-	logger := types.GetLogger(ec2Name, logPath)
+func newEC2Manager(cfg *config.Config, logPath string) resource.Manager {
+	logger := config.GetLogger(ec2Name, logPath)
 
-	ec2Manager = types.ResourceManager{
+	ec2Manager = resource.Manager{
 		Name:     ec2Name,
 		LongName: ec2LongName,
 		Config:   cfg,
 		Logger:   logger,
-		GetAll: func() ([]*types.Resource, error) {
+		GetAll: func() ([]*resource.Resource, error) {
 			return GetAllEC2Instances(*cfg.Aws, logger)
 		},
-		Destroy: func(resources []*types.Resource) error {
+		Destroy: func(resources []*resource.Resource) error {
 			return TerminateEC2Instances(*cfg.Aws, resources, logger)
 		},
-		Stop: func(resources []*types.Resource) error {
+		Stop: func(resources []*resource.Resource) error {
 			return StopEC2Instances(*cfg.Aws, resources, logger)
 		},
-		Resume: func(resources []*types.Resource) error {
+		Resume: func(resources []*resource.Resource) error {
 			return ResumeEC2Instances(*cfg.Aws, resources, logger)
 		},
 	}

@@ -3,11 +3,12 @@ package models
 import (
 	"gorm.io/gorm/clause"
 
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/resource"
 )
 
 // CreateOrUpdateResources : Creates resource if it does not exists else updates it
-func CreateOrUpdateResources(resources []*types.Resource) error {
+func CreateOrUpdateResources(resources []*resource.Resource) error {
 	// Update columns to new value on `id` conflict
 	var err error
 	for _, r := range resources {
@@ -19,14 +20,14 @@ func CreateOrUpdateResources(resources []*types.Resource) error {
 	return err
 }
 
-// CreateAllResourceManagers : Creates all resource managers
-func CreateAllResourceManagers(providers []*types.Provider) error {
+// CreateAllManagers : Creates all resource managers
+func CreateAllManagers(providers []*provider.Provider) error {
 	// Update columns to new value on `id` conflict
 
 	var err error
 	for _, provider := range providers {
-		for _, rmgr := range provider.ResourceManagers {
-			err = db.Where(types.ResourceManager{Name: rmgr.Name}).FirstOrCreate(&rmgr).Error
+		for _, rmgr := range provider.Managers {
+			err = db.Where(resource.Manager{Name: rmgr.Name}).FirstOrCreate(&rmgr).Error
 		}
 	}
 	return err

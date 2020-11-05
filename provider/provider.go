@@ -1,21 +1,24 @@
-package types
+package provider
 
 import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mensaah/reka/resource"
+	"github.com/mensaah/reka/rules"
 )
 
 // Resources Contains map where key is the name of the manager and the value is an array of the
 // resources managed by the manager
-type Resources map[string][]*Resource
+type Resources map[string][]*resource.Resource
 
 // Provider : Provider definition
 // Implements all logic for controlling Resource Managers
 type Provider struct {
-	Name             string
-	Logger           *log.Entry
-	ResourceManagers map[string]*ResourceManager // [mgrName: ResourceManager]
+	Name     string
+	Logger   *log.Entry
+	Managers map[string]*resource.Manager // [mgrName: Manager]
 }
 
 // GetAllResources : Returns all resources which reka can find
@@ -23,9 +26,9 @@ func (p *Provider) GetAllResources() Resources {
 	p.Logger.Info("Fetching All Resources")
 	var wg sync.WaitGroup
 	resources := make(Resources)
-	for _, resMgr := range p.ResourceManagers {
+	for _, resMgr := range p.Managers {
 		wg.Add(1)
-		go func(res Resources, resMgr *ResourceManager) {
+		go func(res Resources, resMgr *resource.Manager) {
 			defer wg.Done()
 			resMgrResources, err := resMgr.GetAll()
 			if err != nil {
@@ -43,10 +46,10 @@ func (p *Provider) GetDestroyableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting Destroyable Resources")
 	destroyableResources := make(Resources)
 	for mgrName, resList := range resources {
-		var destroyableResList []*Resource
-		for _, resource := range resList {
-			if ShouldInitiateDestruction(resource.Tags) {
-				destroyableResList = append(destroyableResList, resource)
+		var destroyableResList []*resource.Resource
+		for _, r := range resList {
+			if rules.GetResourceAction(r) == rules.Destroy {
+				destroyableResList = append(destroyableResList, r)
 			}
 		}
 		destroyableResources[mgrName] = destroyableResList
@@ -59,10 +62,10 @@ func (p *Provider) GetStoppableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting Stoppable Resources")
 	stoppableResources := make(Resources)
 	for mgrName, resList := range resources {
-		var stoppableResList []*Resource
-		for _, resource := range resList {
-			if resource.IsActive() && ShouldInitiateStopping(resource.Tags) {
-				stoppableResList = append(stoppableResList, resource)
+		var stoppableResList []*resource.Resource
+		for _, r := range resList {
+			if r.IsActive() && rules.GetResourceAction(r) == rules.Stop {
+				stoppableResList = append(stoppableResList, r)
 			}
 		}
 		stoppableResources[mgrName] = stoppableResList
@@ -75,10 +78,10 @@ func (p *Provider) GetResumableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting resumable Resources")
 	resumableResource := make(Resources)
 	for mgrName, resList := range resources {
-		var resumableResList []*Resource
-		for _, resource := range resList {
-			if resource.IsStopped() && ShouldInitiateResumption(resource.Tags) {
-				resumableResList = append(resumableResList, resource)
+		var resumableResList []*resource.Resource
+		for _, r := range resList {
+			if r.IsStopped() && rules.GetResourceAction(r) == rules.Resume {
+				resumableResList = append(resumableResList, r)
 			}
 		}
 		resumableResource[mgrName] = resumableResList
@@ -115,7 +118,7 @@ func (p *Provider) StopResources(resources Resources) map[string]string {
 	for mgrName, res := range resources {
 		wg.Add(1)
 
-		go func(mgrName string, res []*Resource) {
+		go func(mgrName string, res []*resource.Resource) {
 			defer wg.Done()
 			mgr := p.getManager(mgrName)
 			if mgr.Stop != nil {
@@ -138,7 +141,7 @@ func (p *Provider) ResumeResources(resources Resources) map[string]string {
 
 	for mgrName, res := range resources {
 		wg.Add(1)
-		go func(mgrName string, res []*Resource) {
+		go func(mgrName string, res []*resource.Resource) {
 			defer wg.Done()
 			mgr := p.getManager(mgrName)
 			if mgr.Resume != nil {
@@ -153,8 +156,8 @@ func (p *Provider) ResumeResources(resources Resources) map[string]string {
 	return errs
 }
 
-func (p *Provider) getManager(name string) *ResourceManager {
-	return p.ResourceManagers[name]
+func (p *Provider) getManager(name string) *resource.Manager {
+	return p.Managers[name]
 }
 
 // Nuke : POOF !!!
@@ -166,7 +169,7 @@ func (p *Provider) Nuke() (string, error) {
 // GetResourceNames Get a array of resource names
 func (p *Provider) GetResourceNames() []string {
 	var arr []string
-	for resMgr := range p.ResourceManagers {
+	for resMgr := range p.Managers {
 		arr = append(arr, resMgr)
 	}
 	return arr

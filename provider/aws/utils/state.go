@@ -1,25 +1,25 @@
 package utils
 
 import (
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/resource"
 )
 
 // GetResourceState Get the current status of Resource: Pending, Running, ... Stopped
-func GetResourceState(s int32) types.State {
+func GetResourceState(s int32) resource.State {
 	switch s {
 	case 0:
-		return types.Pending
+		return resource.Pending
 	case 16:
-		return types.Running
+		return resource.Running
 	case 32:
-		return types.ShuttingDown
+		return resource.ShuttingDown
 	case 48:
-		return types.Destroyed
+		return resource.Destroyed
 	case 64:
-		return types.Stopping
+		return resource.Stopping
 	case 80:
-		return types.Stopped
+		return resource.Stopped
 	default:
-		return types.Stopped
+		return resource.Stopped
 	}
 }

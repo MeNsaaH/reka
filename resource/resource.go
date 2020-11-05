@@ -1,16 +1,17 @@
-package types
+package resource
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/mensaah/reka/config"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	"github.com/mensaah/reka/config"
 )
 
-// ResourceManager : S3, CloudStorage etc
-type ResourceManager struct {
+// Manager : S3, CloudStorage etc
+type Manager struct {
 	gorm.Model
 	Name     string `gorm:"unique;not null"`
 	LongName string
@@ -27,7 +28,7 @@ type ResourceManager struct {
 	Resume  func([]*Resource) error `gorm:"-"`
 }
 
-func (mgr ResourceManager) String() string {
+func (mgr Manager) String() string {
 	return mgr.Name
 }
 
@@ -37,7 +38,7 @@ type Resource struct {
 	gorm.Model
 	UUID        string `gorm:"unique;not null"`
 	ManagerName string
-	Manager     *ResourceManager `gorm:"foreignKey:ManagerName;references:Name"`
+	Manager     *Manager `gorm:"foreignKey:ManagerName;references:Name"`
 
 	Region string // Region of Resource
 
@@ -56,7 +57,7 @@ type Resource struct {
 	ResumeError error `gorm:"-"`
 
 	// Tags are for AWS Instances
-	Tags ResourceTags `gorm:"-"`
+	Tags Tags `gorm:"-"`
 }
 
 func (r Resource) String() string {

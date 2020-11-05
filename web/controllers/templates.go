@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/provider"
 )
 
 var (
 	tmpl      *template.Template
-	providers map[string]*types.Provider
+	providers map[string]*provider.Provider
 )
 
 // GetTemplatesDir get path to templates file
@@ -26,9 +26,9 @@ func GetTemplatesDir() string {
 }
 
 //LoadTemplates loads templates from views directory
-func LoadTemplates(p []*types.Provider) {
+func LoadTemplates(p []*provider.Provider) {
 	// Load Providers
-	providers = make(map[string]*types.Provider)
+	providers = make(map[string]*provider.Provider)
 	for _, provider := range p {
 		providers[provider.Name] = provider
 	}
