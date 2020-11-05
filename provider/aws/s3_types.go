@@ -2,7 +2,7 @@ package aws
 
 import (
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/resource"
 )
 
 const (
@@ -12,19 +12,19 @@ const (
 	s3LongName = "Simple Storage Service"
 )
 
-func newS3Manager(cfg *config.Config, logPath string) types.ResourceManager {
+func newS3Manager(cfg *config.Config, logPath string) resource.Manager {
 
-	logger := types.GetLogger(s3Name, logPath)
+	logger := config.GetLogger(s3Name, logPath)
 
-	return types.ResourceManager{
+	return resource.Manager{
 		Name:     s3Name,
 		LongName: s3LongName,
 		Config:   cfg,
 		Logger:   logger,
-		GetAll: func() ([]*types.Resource, error) {
+		GetAll: func() ([]*resource.Resource, error) {
 			return getAllS3Buckets(*cfg.Aws, logger)
 		},
-		Destroy: func(resources []*types.Resource) error {
+		Destroy: func(resources []*resource.Resource) error {
 			return destroyS3Buckets(*cfg.Aws, resources, logger)
 		},
 	}

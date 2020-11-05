@@ -10,17 +10,17 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/provider/aws/utils"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/resource"
 )
 
 // returns only instance IDs of unprotected ec2 instances
-func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, region string, logger *log.Entry) ([]*types.Resource, error) {
-	var ec2Instances []*types.Resource
+func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, region string, logger *log.Entry) ([]*resource.Resource, error) {
+	var ec2Instances []*resource.Resource
 	logger.Debug("Fetching EC2 Details")
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			// https://stackoverflow.com/a/48554123/7167357
-			tags := utils.ParseResourceTags(*(*[]utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
+			tags := utils.ParseTags(*(*[]utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
 
 			// We need the creation-date when parsing Tags for relative defintions
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
@@ -40,7 +40,7 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, re
 }
 
 // GetAllEC2Instances Get all instances
-func GetAllEC2Instances(cfg aws.Config, logger *log.Entry) ([]*types.Resource, error) {
+func GetAllEC2Instances(cfg aws.Config, logger *log.Entry) ([]*resource.Resource, error) {
 	logger.Debug("Fetching EC2 Instances")
 
 	svc := ec2.NewFromConfig(cfg)
@@ -61,7 +61,7 @@ func GetAllEC2Instances(cfg aws.Config, logger *log.Entry) ([]*types.Resource, e
 }
 
 // StopEC2Instances Stop Running Instances
-func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
+func StopEC2Instances(cfg aws.Config, instances []*resource.Resource, logger *log.Entry) error {
 	svc := ec2.NewFromConfig(cfg)
 	var instanceIds []*string
 
@@ -90,7 +90,7 @@ func StopEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.E
 }
 
 // ResumeEC2Instances Resume Stopped instances
-func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
+func ResumeEC2Instances(cfg aws.Config, instances []*resource.Resource, logger *log.Entry) error {
 	svc := ec2.NewFromConfig(cfg)
 	var instanceIds []*string
 
@@ -118,7 +118,7 @@ func ResumeEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log
 }
 
 // TerminateEC2Instances Shutdown instances
-func TerminateEC2Instances(cfg aws.Config, instances []*types.Resource, logger *log.Entry) error {
+func TerminateEC2Instances(cfg aws.Config, instances []*resource.Resource, logger *log.Entry) error {
 	svc := ec2.NewFromConfig(cfg)
 	var instanceIds []*string
 

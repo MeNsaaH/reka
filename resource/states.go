@@ -1,5 +1,5 @@
 //go:generate enumer -type=State ./provider/states.go
-package types
+package resource
 
 // State :The Current State of the Resource
 type State int

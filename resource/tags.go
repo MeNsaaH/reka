@@ -1,4 +1,4 @@
-package types
+package resource
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ResourceTags : A tag objects
-type ResourceTags map[string]string
+// Tags : A tag objects
+type Tags map[string]string
 
 const (
 	rekaNamespace      = "reka"
@@ -57,7 +57,7 @@ func getCleanTag(key string) string {
 // - include-all: Reka starts tracking all the resources
 
 // ShouldInitiateDestruction checks if the tags to initiate destruction are valid at the time of execution
-func ShouldInitiateDestruction(tags ResourceTags) bool {
+func ShouldInitiateDestruction(tags Tags) bool {
 	// For destructionDate, check if current date is/surpassed destruction date
 	for k, v := range tags {
 		if isValidRekaTag(k) {
@@ -96,7 +96,7 @@ func getCleanActiveDurationValue(value string) (time.Time, time.Time, error) {
 }
 
 // ShouldInitiateStopping checks if the tags to initiate destruction are valid at the time of execution
-func ShouldInitiateStopping(tag ResourceTags) bool {
+func ShouldInitiateStopping(tag Tags) bool {
 	for k, v := range tag {
 		if isValidRekaTag(k) {
 			cleanedTag := getCleanTag(k)
@@ -122,7 +122,7 @@ func ShouldInitiateStopping(tag ResourceTags) bool {
 }
 
 // ShouldInitiateResumption checks if the tags to initiate destruction are valid at the time of execution
-func ShouldInitiateResumption(tag ResourceTags) bool {
+func ShouldInitiateResumption(tag Tags) bool {
 	for k, v := range tag {
 		if isValidRekaTag(k) {
 			cleanedTag := getCleanTag(k)

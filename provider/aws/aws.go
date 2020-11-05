@@ -6,13 +6,14 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/types"
+	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/resource"
 )
 
 var (
 	providerName     = "aws"
 	logger           *log.Entry
-	resourceManagers map[string]*types.ResourceManager
+	resourceManagers map[string]*resource.Manager
 )
 
 func GetName() string {
@@ -20,8 +21,8 @@ func GetName() string {
 }
 
 // NewResource Returns a new Resource object
-func NewResource(id, manager string) *types.Resource {
-	resource := types.Resource{}
+func NewResource(id, manager string) *resource.Resource {
+	resource := resource.Resource{}
 	resource.UUID = id
 	resource.Manager = resourceManagers[manager]
 
@@ -29,13 +30,13 @@ func NewResource(id, manager string) *types.Resource {
 }
 
 // NewProvider : Creates a New AWS Provider
-func NewProvider() (*types.Provider, error) {
+func NewProvider() (*provider.Provider, error) {
 
-	aws := types.Provider{}
+	aws := provider.Provider{}
 	aws.Name = providerName
 
 	logFile := fmt.Sprintf("%s/logger.log", config.GetConfig().LogPath)
-	logger = types.GetLogger(providerName, logFile)
+	logger = config.GetLogger(providerName, logFile)
 	// Setup Logger
 	aws.Logger = logger
 
@@ -44,11 +45,11 @@ func NewProvider() (*types.Provider, error) {
 	ec2Manager := newEC2Manager(cfg, logFile)
 	s3Manager := newS3Manager(cfg, logFile)
 
-	resourceManagers = map[string]*types.ResourceManager{
+	resourceManagers = map[string]*resource.Manager{
 		ec2Manager.Name: &ec2Manager,
 		s3Manager.Name:  &s3Manager,
 	}
 
-	aws.ResourceManagers = resourceManagers
+	aws.Managers = resourceManagers
 	return &aws, nil
 }

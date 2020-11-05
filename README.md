@@ -4,13 +4,17 @@
 A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resources based on tags
 
 ### Project Name
-`REKA` is derived from a Native Nigerian Language, Igbo, meaning `Reap`.
+`REKA` is derived from a Native Nigerian Language, Igbo, meaning `Reap`|`Tear Down`.
+
+### BEWARE!
+
+This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should be used in environments with **WITH CAUTION**.
 
 ### TODO
 - [x] Bootstrap application architecture
 - [x] Schedule resource refreshing
 - [ ] Create Web Dashboard 
-- [ ] generate Sample Yaml config and load config
+- [x] generate Sample Yaml config and load config
 - [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
 - [ ] Support Manual Trigger of resources reaping from Dashboard/CLI
 - [ ] Allow authentication username and password set in config file

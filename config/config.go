@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -22,33 +21,15 @@ const (
 	appName = "REKA"
 )
 
-// DatabaseConfig Config for Dabatabase
-type DatabaseConfig struct {
-	Type     string
-	Name     string
-	Host     string
-	User     string
-	Password string
-}
-
-// GetConnectionString the connection string  for database
-func (db *DatabaseConfig) GetConnectionString() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", db.Host, db.User, db.Password, db.Name)
-}
-
-// SqliteDefaultPath the default database path to use for sqlite
-func (db *DatabaseConfig) SqliteDefaultPath() string {
-	return path.Join(workingDir, "reka.db")
-}
-
 // Config : The Config values passed to application
 type Config struct {
 	Name            string
 	Providers       []string
-	Database        *DatabaseConfig
-	Aws             *aws.Config
+	Timezone        string
 	RefreshInterval int32
 	LogPath         string
+
+	Database *DatabaseConfig
 
 	// Authentication Details to login to Reka
 	Auth struct {
@@ -57,6 +38,31 @@ type Config struct {
 	}
 
 	staticPath string // Path to Static File
+	Exclude    []struct {
+		Name      string
+		Region    string
+		Tags      map[string]string
+		Resources []string
+	}
+
+	Rules []struct {
+		Name      string
+		Condition struct {
+			ActiveDuration struct {
+				StartTime string
+				StopTime  string
+				StartDay  string
+				StopDay   string
+			}
+			TerminationPolicy string
+			TerminationDate   string
+		}
+		Region string
+		Tags   map[string]string
+	}
+
+	// AWS Config
+	Aws *aws.Config
 }
 
 // LoadConfig load all passed configs and defaults
@@ -95,37 +101,22 @@ func LoadConfig() *Config {
 		}
 	}
 
-	config = &Config{}
-
-	staticPath := viper.GetString("StaticPath")
-	if !path.IsAbs(staticPath) {
-		config.staticPath = path.Join(workingDir, staticPath)
+	if err := viper.Unmarshal(&config); err != nil {
+		log.Fatal(err)
+	}
+	if !path.IsAbs(config.staticPath) {
+		config.staticPath = path.Join(workingDir, config.staticPath)
 	}
 
-	config.Providers = viper.GetStringSlice("Providers")
 	if len(config.Providers) < 1 {
-		log.Fatal("No providers specified. Reka needs atleast one provider to track")
-	}
-
-	config.Auth.Username = viper.GetString("Auth.Username")
-	config.Auth.Password = viper.GetString("Auth.Password")
-
-	config.Database = &DatabaseConfig{
-		Type:     viper.GetString("Database.Type"),
-		Host:     viper.GetString("Database.Host"),
-		Name:     viper.GetString("Database.Name"),
-		User:     viper.GetString("Database.User"),
-		Password: viper.GetString("Database.Password"),
+		log.Fatal("No providers specified. Reka needs atleast one provider to monitor")
 	}
 
 	awsConfig := loadAwsConfig(viper.GetString("aws.AccessKeyID"), viper.GetString("aws.SecretAccessKey"), viper.GetString("aws.DefaultRegion"))
 	config.Aws = &awsConfig
 
-	config.RefreshInterval = viper.GetInt32("RefreshInterval")
-
-	config.LogPath = viper.GetString("LogPath")
 	if !path.IsAbs(config.LogPath) {
-		config.LogPath = path.Join(workingDir, staticPath)
+		config.LogPath = path.Join(workingDir, config.LogPath)
 	}
 	// Create the Logs directory if it does not exists
 	if _, err := os.Stat(config.LogPath); os.IsNotExist(err) {
