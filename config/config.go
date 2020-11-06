@@ -112,6 +112,10 @@ func LoadConfig() *Config {
 		log.Fatal("No providers specified. Reka needs atleast one provider to monitor")
 	}
 
+	if !path.IsAbs(viper.GetString("StaticPath")) {
+		config.staticPath = path.Join(workingDir, viper.GetString("StaticPath"))
+	}
+
 	awsConfig := loadAwsConfig(viper.GetString("aws.AccessKeyID"), viper.GetString("aws.SecretAccessKey"), viper.GetString("aws.DefaultRegion"))
 	config.Aws = &awsConfig
 
