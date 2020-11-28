@@ -114,8 +114,8 @@ func GetRules() []Ruler {
 func GetResourceAction(res *resource.Resource) Action {
 	// Returns the first Matching Rule Action for a resource
 	for _, r := range rules {
-		if r.CheckResource(res) != DoNothing {
-			return r.CheckResource(res)
+		if action := r.CheckResource(res); action != DoNothing {
+			return action
 		}
 	}
 	return DoNothing

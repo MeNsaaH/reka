@@ -13,6 +13,12 @@ import (
 // resources managed by the manager
 type Resources map[string][]*resource.Resource
 
+type SafeResources struct {
+	mu  sync.Mutex
+	v   Resources
+	err map[string]error
+}
+
 // Provider : Provider definition
 // Implements all logic for controlling Resource Managers
 type Provider struct {
@@ -25,35 +31,44 @@ type Provider struct {
 func (p *Provider) GetAllResources() Resources {
 	p.Logger.Info("Fetching All Resources")
 	var wg sync.WaitGroup
-	resources := make(Resources)
+	resources := SafeResources{v: make(Resources)}
 	for _, resMgr := range p.Managers {
 		wg.Add(1)
-		go func(res Resources, resMgr *resource.Manager) {
+		go func(res *SafeResources, resMgr *resource.Manager) {
 			defer wg.Done()
+
 			resMgrResources, err := resMgr.GetAll()
 			if err != nil {
 				resMgr.Logger.Error(err)
 			}
-			res[resMgr.Name] = resMgrResources
-		}(resources, resMgr)
+			res.mu.Lock()
+			defer res.mu.Unlock()
+			res.v[resMgr.Name] = resMgrResources
+		}(&resources, resMgr)
 	}
 	wg.Wait()
-	return resources
+	return resources.v
 }
 
 // GetDestroyableResources : Return the resources which can be destroyed
 func (p *Provider) GetDestroyableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting Destroyable Resources")
+	count := 0
 	destroyableResources := make(Resources)
 	for mgrName, resList := range resources {
 		var destroyableResList []*resource.Resource
 		for _, r := range resList {
-			if rules.GetResourceAction(r) == rules.Destroy {
-				destroyableResList = append(destroyableResList, r)
+			// Returns the first Matching Rule Action for a resource
+			for _, rule := range rules.GetRules() {
+				if action := rule.CheckResource(r); action == rules.Destroy {
+					destroyableResList = append(destroyableResList, r)
+				}
 			}
 		}
+		count += len(destroyableResList)
 		destroyableResources[mgrName] = destroyableResList
 	}
+	p.Logger.Infof("Found %d resources to be destroyed", count)
 	return destroyableResources
 }
 
@@ -61,15 +76,20 @@ func (p *Provider) GetDestroyableResources(resources Resources) Resources {
 func (p *Provider) GetStoppableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting Stoppable Resources")
 	stoppableResources := make(Resources)
+	count := 0
 	for mgrName, resList := range resources {
 		var stoppableResList []*resource.Resource
 		for _, r := range resList {
-			if r.IsActive() && rules.GetResourceAction(r) == rules.Stop {
-				stoppableResList = append(stoppableResList, r)
+			for _, rule := range rules.GetRules() {
+				if action := rule.CheckResource(r); r.IsActive() && action == rules.Stop {
+					stoppableResList = append(stoppableResList, r)
+				}
 			}
 		}
+		count += len(stoppableResList)
 		stoppableResources[mgrName] = stoppableResList
 	}
+	p.Logger.Infof("Found %d resources to be stopped", count)
 	return stoppableResources
 }
 
@@ -77,15 +97,20 @@ func (p *Provider) GetStoppableResources(resources Resources) Resources {
 func (p *Provider) GetResumableResources(resources Resources) Resources {
 	p.Logger.Debug("Getting resumable Resources")
 	resumableResource := make(Resources)
+	count := 0
 	for mgrName, resList := range resources {
 		var resumableResList []*resource.Resource
 		for _, r := range resList {
-			if r.IsStopped() && rules.GetResourceAction(r) == rules.Resume {
-				resumableResList = append(resumableResList, r)
+			for _, rule := range rules.GetRules() {
+				if action := rule.CheckResource(r); r.IsStopped() && action == rules.Resume {
+					resumableResList = append(resumableResList, r)
+				}
 			}
 		}
 		resumableResource[mgrName] = resumableResList
 	}
+	count += len(resumableResource)
+	p.Logger.Infof("Found %d resources to be resumed", count)
 	return resumableResource
 }
 
@@ -98,14 +123,20 @@ func (p *Provider) GetUnusedResources(resources Resources) Resources {
 func (p *Provider) DestroyResources(resources Resources) map[string]string {
 	errs := make(map[string]string)
 	p.Logger.Debugf("Destroying Resources...")
+	var wg sync.WaitGroup
 
 	for mgrName, res := range resources {
-		mgr := p.getManager(mgrName)
-		mgr.Logger.Debugf("Destroying %s ", mgrName)
-		if err := mgr.Destroy(res); err != nil {
-			errs[mgrName] = err.Error()
-		}
+		wg.Add(1)
+		go func(mgrName string, res []*resource.Resource) {
+			defer wg.Done()
+			mgr := p.getManager(mgrName)
+			mgr.Logger.Debugf("Destroying %s ", mgrName)
+			if err := mgr.Destroy(res); err != nil {
+				errs[mgrName] = err.Error()
+			}
+		}(mgrName, res)
 	}
+	wg.Wait()
 	return errs
 }
 
