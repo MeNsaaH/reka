@@ -20,7 +20,7 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, re
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
 			// https://stackoverflow.com/a/48554123/7167357
-			tags := utils.ParseTags(*(*[]utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
+			tags := utils.ParseTags(*(*[]*utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
 
 			// We need the creation-date when parsing Tags for relative defintions
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.

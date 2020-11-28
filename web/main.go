@@ -30,6 +30,7 @@ import (
 	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws"
+	"github.com/mensaah/reka/resource"
 	"github.com/mensaah/reka/rules"
 	"github.com/mensaah/reka/web/controllers"
 	"github.com/mensaah/reka/web/models"
@@ -53,7 +54,10 @@ func main() {
 	cfg := config.GetConfig()
 
 	for _, rule := range cfg.Rules {
-		rules.ParseRule(*((*rules.Rule)(unsafe.Pointer(&rule))))
+		// Convert Rule in config to rules.Rule type
+		r := *((*rules.Rule)(unsafe.Pointer(&rule)))
+		r.Tags = resource.Tags(rule.Tags)
+		rules.ParseRule(r)
 	}
 
 	// Initialize Provider objects
@@ -138,10 +142,10 @@ func refreshResources(providers []*provider.Provider) {
 			}
 		}
 		destroyableResources := provider.GetDestroyableResources(allResources)
-		fmt.Println(destroyableResources)
-		// stoppableResources := provider.GetStoppableResources(allResources)
-		// save(stoppableResources)
-		// resumableResources := provider.GetResumableResources(allResources)
-		// save(resumableResources)
+		fmt.Println("Destroyable Resources: ", destroyableResources)
+		stoppableResources := provider.GetStoppableResources(allResources)
+		fmt.Println("Stoppable Resources: ", stoppableResources)
+		resumableResources := provider.GetResumableResources(allResources)
+		fmt.Println("Resumable Resources: ", resumableResources)
 	}
 }

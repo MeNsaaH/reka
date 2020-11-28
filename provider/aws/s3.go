@@ -43,7 +43,7 @@ func getS3BucketTags(svc *s3.Client, bucketName string, logger *log.Entry) (reso
 		return resource.Tags{}, err
 	}
 	// https://stackoverflow.com/a/48554123/7167357
-	tags := utils.ParseTags(*(*[]utils.AWSTag)(unsafe.Pointer(&result.TagSet)))
+	tags := utils.ParseTags(*((*[]*utils.AWSTag)(unsafe.Pointer(&result.TagSet))))
 	return tags, nil
 }
 
