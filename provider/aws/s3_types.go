@@ -1,6 +1,8 @@
 package aws
 
 import (
+	log "github.com/sirupsen/logrus"
+
 	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/resource"
 )
@@ -12,9 +14,11 @@ const (
 	s3LongName = "Simple Storage Service"
 )
 
+var s3Logger *log.Entry
+
 func newS3Manager(cfg *config.Config, logPath string) resource.Manager {
 
-	logger := config.GetLogger(s3Name, logPath)
+	s3Logger = config.GetLogger(s3Name, logPath)
 
 	return resource.Manager{
 		Name:     s3Name,
@@ -22,10 +26,10 @@ func newS3Manager(cfg *config.Config, logPath string) resource.Manager {
 		Config:   cfg,
 		Logger:   logger,
 		GetAll: func() ([]*resource.Resource, error) {
-			return getAllS3Buckets(*cfg.Aws, logger)
+			return getAllS3Buckets(*cfg.Aws)
 		},
 		Destroy: func(resources []*resource.Resource) error {
-			return destroyS3Buckets(*cfg.Aws, resources, logger)
+			return destroyS3Buckets(*cfg.Aws, resources)
 		},
 	}
 }
