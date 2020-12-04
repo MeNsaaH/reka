@@ -141,11 +141,19 @@ func refreshResources(providers []*provider.Provider) {
 				models.CreateOrUpdateResources(resources)
 			}
 		}
-		destroyableResources := provider.GetDestroyableResources(allResources)
-		fmt.Println("Destroyable Resources: ", destroyableResources)
 		stoppableResources := provider.GetStoppableResources(allResources)
 		fmt.Println("Stoppable Resources: ", stoppableResources)
+		errs := provider.StopResources(stoppableResources)
+		fmt.Println("Errors Stopping Resources: ", errs)
+
 		resumableResources := provider.GetResumableResources(allResources)
 		fmt.Println("Resumable Resources: ", resumableResources)
+		errs = provider.ResumeResources(resumableResources)
+		fmt.Println("Errors Resuming Resources: ", errs)
+
+		destroyableResources := provider.GetDestroyableResources(allResources)
+		fmt.Println("Destroyable Resources: ", destroyableResources)
+		errs = provider.DestroyResources(destroyableResources)
+		fmt.Println("Errors Destroying Resources: ", errs)
 	}
 }

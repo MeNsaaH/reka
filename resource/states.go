@@ -12,3 +12,14 @@ const (
 	Stopping
 	Stopped
 )
+
+// StyleClass : The css class to represent the state with
+func (s State) StyleClass() string {
+	if s == Running {
+		return "success"
+	} else if s == Pending || s == ShuttingDown || s == Stopping {
+		return "info"
+	} else {
+		return "danger"
+	}
+}

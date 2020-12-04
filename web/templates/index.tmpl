@@ -114,7 +114,7 @@
                                             <td><a href="pages/examples/invoice.html">{{ .UUID }}</a></td>
                                             <td>{{ .Region }}</td>
                                             <td>{{ .ManagerName }}</td>
-                                            <td><span class="badge badge-success">{{ .State }}</span></td>
+                                            <td><span class="badge badge-{{ styleClass .State }}">{{ .State }}</span></td>
                                             <td>
                                                 <div class="sparkbar" data-color="#00a65a" data-height="20">
                                                     {{ .UpdatedAt.Format "Jan 02, 2006 15:04:05 UTC" }}</div>

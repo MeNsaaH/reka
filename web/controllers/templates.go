@@ -9,6 +9,7 @@ import (
 
 	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/resource"
 )
 
 var (
@@ -37,6 +38,7 @@ func LoadTemplates(p []*provider.Provider) {
 		"providerEnabled":      ProviderEnabled,
 		"stringIn":             StringIn,
 		"getProviderResources": GetProviderResources,
+		"styleClass":           StyleClass,
 	})
 
 	fn := func(path string, f os.FileInfo, err error) error {
@@ -73,4 +75,17 @@ func ProviderEnabled(s string) bool {
 // GetProviderResources returns the resource names supported by the provider
 func GetProviderResources(provider string) []string {
 	return providers[provider].GetResourceNames()
+}
+
+// StyleClass : The css class to represent the state with
+func StyleClass(s resource.State) string {
+	if s == resource.Running {
+		return "success"
+	} else if s == resource.Pending || s == resource.ShuttingDown || s == resource.Stopping {
+		return "info"
+	} else if s == resource.Stopped {
+		return "warning"
+	} else {
+		return "danger"
+	}
 }

@@ -20,6 +20,7 @@ This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should b
 - [ ] Allow authentication username and password set in config file
 - [ ] Create Kubernetes Manifests and Helm Charts
 - [ ] Create CLI
+- [ ] Save infra state and desired state in persistent storage
 
 #### Supported Resources
 - AWS: https://github.com/MeNsaaH/reka/issues/1 

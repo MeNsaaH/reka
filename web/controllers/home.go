@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,8 @@ func HomeGet(c *gin.Context) {
 	h["RunningResourceCount"] = db.Where("state = ?", resource.Running).Find(&r).RowsAffected
 	h["StoppedResourceCount"] = db.Where("state = ?", resource.Stopped).Find(&r).RowsAffected
 	h["DestroyedResourceCount"] = db.Where("state = ?", resource.Destroyed).Find(&r).RowsAffected
+
+	fmt.Println(h)
 
 	// Get Recent Resource Updates
 	var recentResourceUpdates []resource.Resource
