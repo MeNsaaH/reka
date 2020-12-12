@@ -1,10 +1,12 @@
 package provider
 
 import (
+	"fmt"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/resource"
 	"github.com/mensaah/reka/rules"
 )
@@ -24,7 +26,16 @@ type SafeResources struct {
 type Provider struct {
 	Name     string
 	Logger   *log.Entry
+	LogPath  string
 	Managers map[string]*resource.Manager // [mgrName: Manager]
+}
+
+// SetLogger : Sets Logger properties for Provider
+func (p *Provider) SetLogger(id string) {
+	logFile := fmt.Sprintf("%s/%s.log", config.GetConfig().LogPath, id)
+	// Setup Logger
+	p.LogPath = logFile
+	p.Logger = config.GetLogger(p.Name, logFile)
 }
 
 // GetAllResources : Returns all resources which reka can find
@@ -131,7 +142,7 @@ func (p *Provider) DestroyResources(resources Resources) map[string]error {
 			go func(mgrName string, res []*resource.Resource) {
 				defer wg.Done()
 				mgr := p.getManager(mgrName)
-				mgr.Logger.Debugf("Destroying %s ", mgrName)
+				p.Logger.Debugf("Destroying %s ", mgrName)
 				if err := mgr.Destroy(res); err != nil {
 					errs[mgrName] = err
 				}
@@ -156,7 +167,7 @@ func (p *Provider) StopResources(resources Resources) map[string]error {
 				defer wg.Done()
 				mgr := p.getManager(mgrName)
 				if mgr.Stop != nil {
-					mgr.Logger.Debugf("Stopping %d %s Resources", len(res), mgrName)
+					p.Logger.Debugf("Stopping %d %s Resources", len(res), mgrName)
 					if err := mgr.Stop(res); err != nil {
 						errs[mgrName] = err
 					}
@@ -181,7 +192,7 @@ func (p *Provider) ResumeResources(resources Resources) map[string]error {
 				defer wg.Done()
 				mgr := p.getManager(mgrName)
 				if mgr.Resume != nil {
-					mgr.Logger.Debugf("Resuming %d %s Resources", len(res), mgrName)
+					p.Logger.Debugf("Resuming %d %s Resources", len(res), mgrName)
 					if err := mgr.Resume(res); err != nil {
 						errs[mgrName] = err
 					}

@@ -1,8 +1,6 @@
 package aws
 
 import (
-	"fmt"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
@@ -35,15 +33,12 @@ func NewProvider() (*provider.Provider, error) {
 	aws := provider.Provider{}
 	aws.Name = providerName
 
-	logFile := fmt.Sprintf("%s/logger.log", config.GetConfig().LogPath)
-	logger = config.GetLogger(providerName, logFile)
-	// Setup Logger
-	aws.Logger = logger
+	aws.SetLogger("logger.log")
 
 	cfg := config.GetConfig()
 
-	ec2Manager := newEC2Manager(cfg, logFile)
-	s3Manager := newS3Manager(cfg, logFile)
+	ec2Manager := newEC2Manager(cfg, aws.LogPath)
+	s3Manager := newS3Manager(cfg, aws.LogPath)
 
 	resourceManagers = map[string]*resource.Manager{
 		ec2Manager.Name: &ec2Manager,

@@ -16,47 +16,10 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
         <!-- Messages Dropdown Menu -->
-        <li class="nav-item dropdown">
-            <a class="nav-link" data-toggle="dropdown" href="#">
-                <i class="far fa-comments"></i>
-                <span class="badge badge-danger navbar-badge">3</span>
+        <li class="nav-item">
+            <a class="nav-link" href="https://github.com/mensaah/reka" target="blank">
+                <i class="fab fa-github"></i>
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                <a href="#" class="dropdown-item">
-                    <!-- Message Start -->
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-sm">Call me whenever you can...</p>
-                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                        </div>
-                    </div>
-                    <!-- Message End -->
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item">
-                    <!-- Message Start -->
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-sm">I got your message bro</p>
-                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                        </div>
-                    </div>
-                    <!-- Message End -->
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item">
-                    <!-- Message Start -->
-                    <div class="media">
-                        <div class="media-body">
-                            <p class="text-sm">The subject goes here</p>
-                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                        </div>
-                    </div>
-                    <!-- Message End -->
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
-            </div>
         </li>
         <!-- Notifications Dropdown Menu -->
         <li class="nav-item dropdown">
@@ -114,7 +77,7 @@
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
                 <li class="nav-item has-treeview menu-open">
@@ -152,7 +115,10 @@
                         <li class="nav-item">
                             <a href="pages/layout/top-nav.html" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p>{{.}}</p>
+                                <p>
+                                    {{.}} 
+                                    <span class="mx-2 badge badge-success navbar-badge float-right"> 10 </span>
+                                </p>
                             </a>
                         </li>
                     {{end}}
@@ -162,9 +128,8 @@
                 </li>
                 
                 <li class="nav-item">
-                    <a href="https://github.com/mensaah/reka" class="nav-link" target="blank">
-                        <i class="nav-icon fab fa-github"></i>
-                        <p>Github</p>
+                    <a href="https://github.com/mensaah/reka" class="nav-link">
+                        <p>Jobs</p>
                     </a>
                 </li>
                 

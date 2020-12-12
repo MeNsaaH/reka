@@ -124,7 +124,7 @@ func initCronJob(frequency int32) {
 	scheduler = gocron.NewScheduler(time.UTC)
 
 	// Periodic tasks
-	_, err := scheduler.Every(uint64(frequency)).Hour().StartImmediately().Do(refreshResources, providers)
+	_, err := scheduler.Every(uint64(frequency)).Hours().StartImmediately().Do(refreshResources, providers)
 	// _, err := scheduler.Every(uint64(frequency)).Hour().Do(refreshResources, providers)
 	if err != nil {
 		log.Errorf("error creating job: %v", err)
