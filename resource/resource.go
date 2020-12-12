@@ -21,11 +21,11 @@ type Manager struct {
 	Logger *log.Entry `gorm:"-"`
 
 	// Methods Implemented By Resource Manager
-	GetAll func() ([]*Resource, error) `gorm:"-"` // Required
+	GetAll func() ([]*Resource, error) `gorm:"-" json:"-"` // Required
 
-	Destroy func([]*Resource) error `gorm:"-"` // Required
-	Stop    func([]*Resource) error `gorm:"-"`
-	Resume  func([]*Resource) error `gorm:"-"`
+	Destroy func([]*Resource) error `gorm:"-" json:"-"` // Required
+	Stop    func([]*Resource) error `gorm:"-" json:"-"`
+	Resume  func([]*Resource) error `gorm:"-" json:"-"`
 }
 
 func (mgr Manager) String() string {
