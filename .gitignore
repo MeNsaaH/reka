@@ -19,3 +19,4 @@
 tmp
 logs
 config/config.yaml
+reka-state.json

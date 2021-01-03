@@ -78,7 +78,7 @@ func GetProviderResources(provider string) []string {
 }
 
 // StyleClass : The css class to represent the state with
-func StyleClass(s resource.State) string {
+func StyleClass(s resource.Status) string {
 	if s == resource.Running {
 		return "success"
 	} else if s == resource.Pending || s == resource.ShuttingDown || s == resource.Stopping {
