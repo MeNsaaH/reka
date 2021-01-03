@@ -50,7 +50,7 @@ func (p *Provider) GetAllResources() Resources {
 
 			resMgrResources, err := resMgr.GetAll()
 			if err != nil {
-				resMgr.Logger.Error(err)
+				p.Logger.Error(err)
 			}
 			res.mu.Lock()
 			defer res.mu.Unlock()
@@ -127,7 +127,17 @@ func (p *Provider) GetResumableResources(resources Resources) Resources {
 
 // GetUnusedResources : Return the resources which can are not currently in use and can be destroyed
 func (p *Provider) GetUnusedResources(resources Resources) Resources {
-	return Resources{}
+	unusedResources := make(Resources)
+	for mgrName, resList := range resources {
+		var unusedResList []*resource.Resource
+		for _, r := range resList {
+			if r.IsUnused() {
+				unusedResList = append(unusedResList, r)
+			}
+		}
+		unusedResources[mgrName] = unusedResList
+	}
+	return unusedResources
 }
 
 // DestroyResources : Return the resources which can be destroyed

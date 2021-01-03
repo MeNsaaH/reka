@@ -3,7 +3,6 @@ package aws
 import (
 	"context"
 	"fmt"
-	"unsafe"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -18,19 +17,20 @@ func getInstanceDetails(svc *ec2.Client, output *ec2.DescribeInstancesOutput, re
 	ec2Logger.Debug("Fetching EC2 Details")
 	for _, reservation := range output.Reservations {
 		for _, instance := range reservation.Instances {
-			// https://stackoverflow.com/a/48554123/7167357
-			tags := utils.ParseTags(*(*[]*utils.AWSTag)(unsafe.Pointer(&instance.Tags)))
-
+			tags := make(resource.Tags)
+			for _, t := range instance.Tags {
+				tags[*t.Key] = *t.Value
+			}
 			// We need the creation-date when parsing Tags for relative defintions
 			// EC2 Instances Launch Time is not the creation date. It's the time it was last launched.
-			// To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
+			// TODO To get the creation date we might want to get the creation date of the EBS attached to the EC2 instead
 			tags["creation-date"] = (*instance.LaunchTime).String()
 			ec2 := NewResource(*instance.InstanceId, ec2Name)
 			ec2.Region = region
 			// Get CreationDate by getting LaunchTime of attached Volume
 			ec2.CreationDate = *instance.LaunchTime
 			ec2.Tags = tags
-			ec2.State = utils.GetResourceState(*instance.State.Code)
+			ec2.Status = utils.GetResourceStatus(instance.State.Code)
 			ec2Instances = append(ec2Instances, ec2)
 		}
 	}
@@ -46,7 +46,7 @@ func GetAllEC2Instances(cfg aws.Config) ([]*resource.Resource, error) {
 	params := &ec2.DescribeInstancesInput{}
 
 	// Build the request with its input parameters
-	resp, err := svc.DescribeInstances(context.Background(), params)
+	resp, err := svc.DescribeInstances(context.TODO(), params)
 
 	if err != nil {
 		return nil, err
@@ -62,11 +62,11 @@ func GetAllEC2Instances(cfg aws.Config) ([]*resource.Resource, error) {
 // StopEC2Instances Stop Running Instances
 func StopEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 	svc := ec2.NewFromConfig(cfg)
-	var instanceIds []*string
+	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsActive() {
-			instanceIds = append(instanceIds, &instance.UUID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
@@ -80,7 +80,7 @@ func StopEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 		InstanceIds: instanceIds,
 	}
 
-	resp, err := svc.StopInstances(context.Background(), params)
+	resp, err := svc.StopInstances(context.TODO(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)
@@ -91,11 +91,11 @@ func StopEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 // ResumeEC2Instances Resume Stopped instances
 func ResumeEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 	svc := ec2.NewFromConfig(cfg)
-	var instanceIds []*string
+	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsStopped() {
-			instanceIds = append(instanceIds, &instance.UUID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
@@ -108,7 +108,7 @@ func ResumeEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 	}
 	ec2Logger.Debug("Starting EC2 Instances ", instanceIds, " ...")
 
-	resp, err := svc.StartInstances(context.Background(), params)
+	resp, err := svc.StartInstances(context.TODO(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)
@@ -119,11 +119,11 @@ func ResumeEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 // TerminateEC2Instances Shutdown instances
 func TerminateEC2Instances(cfg aws.Config, instances []*resource.Resource) error {
 	svc := ec2.NewFromConfig(cfg)
-	var instanceIds []*string
+	var instanceIds []string
 
 	for _, instance := range instances {
 		if instance.IsStopped() || instance.IsActive() {
-			instanceIds = append(instanceIds, &instance.UUID)
+			instanceIds = append(instanceIds, instance.UUID)
 		}
 	}
 
@@ -137,7 +137,7 @@ func TerminateEC2Instances(cfg aws.Config, instances []*resource.Resource) error
 		InstanceIds: instanceIds,
 	}
 
-	resp, err := svc.TerminateInstances(context.Background(), params)
+	resp, err := svc.TerminateInstances(context.TODO(), params)
 	// TODO Attach error to specific instance where the error occurred if possible
 	if err != nil {
 		fmt.Println(resp, err)

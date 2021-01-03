@@ -7,6 +7,9 @@ import (
 	"github.com/mensaah/reka/resource"
 )
 
+// Manages EC2 instances on the AWS.
+// EC2 resources support stopping/resuming and terminating instances.
+
 var ec2Manager resource.Manager
 
 const (
