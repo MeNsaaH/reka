@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -32,11 +31,15 @@ import (
 	"github.com/mensaah/reka/provider/aws"
 	"github.com/mensaah/reka/resource"
 	"github.com/mensaah/reka/rules"
+	"github.com/mensaah/reka/state"
 )
 
 var (
-	cfgFile   string
-	providers []*provider.Provider
+	cfgFile      string
+	cfg          *config.Config
+	providers    []*provider.Provider
+	backend      state.Backender
+	currentState state.State
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -63,7 +66,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.reka.yaml)")
-
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -93,7 +95,7 @@ func initConfig() {
 
 	// Load Config and Defaults
 	config.LoadConfig()
-	cfg := config.GetConfig()
+	cfg = config.GetConfig()
 
 	for _, rule := range cfg.Rules {
 		// Convert Rule in config to rules.Rule type
@@ -104,7 +106,8 @@ func initConfig() {
 
 	// Initialize Provider objects
 	providers = initProviders()
-
+	backend = state.InitBackend()
+	currentState = make(state.State)
 }
 
 // TODO Add logger to Providers during configuration
@@ -132,11 +135,7 @@ func initProviders() []*provider.Provider {
 func refreshResources(providers []*provider.Provider) {
 	for _, provider := range providers {
 		allResources := provider.GetAllResources()
-		s, err := json.MarshalIndent(allResources, "", "\t")
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(string(s))
+		currentState[provider.Name] = allResources
 
 		// stoppableResources := provider.GetStoppableResources(allResources)
 		// fmt.Println("Stoppable Resources: ", stoppableResources)
@@ -153,4 +152,5 @@ func refreshResources(providers []*provider.Provider) {
 		// errs = provider.DestroyResources(destroyableResources)
 		// fmt.Println("Errors Destroying Resources: ", errs)
 	}
+	backend.WriteState(&currentState)
 }
