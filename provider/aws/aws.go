@@ -38,11 +38,15 @@ func NewProvider() (*provider.Provider, error) {
 	cfg := config.GetConfig()
 
 	ec2Manager := newEC2Manager(cfg, aws.LogPath)
+	eksManager := newEksManager(cfg, aws.LogPath)
 	s3Manager := newS3Manager(cfg, aws.LogPath)
+	ebsManager := newEbsManager(cfg, aws.LogPath)
 
 	resourceManagers = map[string]*resource.Manager{
 		ec2Manager.Name: &ec2Manager,
+		eksManager.Name: &eksManager,
 		s3Manager.Name:  &s3Manager,
+		ebsManager.Name: &ebsManager,
 	}
 
 	aws.Managers = resourceManagers

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"unsafe"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -12,13 +11,12 @@ import (
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mensaah/reka/provider/aws/utils"
 	"github.com/mensaah/reka/resource"
 )
 
 func getS3BucketRegion(cfg aws.Config, bucketName string) (string, error) {
 
-	region, err := s3manager.GetBucketRegion(context.Background(), s3.NewFromConfig(cfg), bucketName)
+	region, err := s3manager.GetBucketRegion(context.TODO(), s3.NewFromConfig(cfg), bucketName)
 	if err != nil {
 		var notFoundErr *s3Types.NoSuchBucket
 		if errors.As(err, &notFoundErr) {
@@ -38,12 +36,14 @@ func getS3BucketTags(svc *s3.Client, bucketName string) (resource.Tags, error) {
 		Bucket: aws.String(bucketName),
 	}
 
-	result, err := svc.GetBucketTagging(context.Background(), input)
+	result, err := svc.GetBucketTagging(context.TODO(), input)
 	if err != nil {
 		return resource.Tags{}, err
 	}
-	// https://stackoverflow.com/a/48554123/7167357
-	tags := utils.ParseTags(*((*[]*utils.AWSTag)(unsafe.Pointer(&result.TagSet))))
+	tags := make(resource.Tags)
+	for _, t := range result.TagSet {
+		tags[*t.Key] = *t.Value
+	}
 	return tags, nil
 }
 
@@ -64,7 +64,7 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsO
 			continue
 		}
 		s3 := NewResource(*s3Bucket.Name, s3Name)
-		s3.State = resource.Running
+		s3.Status = resource.Running
 		s3.Region = s3Region
 		// Get CreationDate by getting LaunchTime of attached Volume
 		s3.CreationDate = *s3Bucket.CreationDate
@@ -84,7 +84,7 @@ func getAllS3Buckets(cfg aws.Config) ([]*resource.Resource, error) {
 	params := &s3.ListBucketsInput{}
 
 	// Build the request with its input parameters
-	resp, err := svc.ListBuckets(context.Background(), params)
+	resp, err := svc.ListBuckets(context.TODO(), params)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func destroyBucket(svc *s3.Client, bucket *resource.Resource) error {
 		Bucket: aws.String(bucket.UUID),
 	}
 
-	_, err := svc.DeleteBucket(context.Background(), input)
+	_, err := svc.DeleteBucket(context.TODO(), input)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,6 @@ func destroyS3Buckets(cfg aws.Config, s3Buckets []*resource.Resource) error {
 			err := destroyBucket(svc, bucket)
 			if err != nil {
 				s3Logger.Errorf("Failed to delete Bucket %d - Error %s ", bucket.ID, err.Error())
-				bucket.DestroyError = err
 			} else {
 				delCount++
 			}

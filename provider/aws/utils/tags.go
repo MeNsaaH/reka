@@ -11,7 +11,7 @@ type AWSTag struct {
 }
 
 // ParseTags Returns a valid Tags type from AWS Instance Tags
-func ParseTags(tags []*AWSTag) resource.Tags {
+func ParseTags(tags []AWSTag) resource.Tags {
 	t := make(resource.Tags)
 
 	for _, tag := range tags {
