@@ -1,20 +1,22 @@
-//go:generate enumer -type=State ./provider/states.go
+//go:generate enumer -type=Status ./status.go
 package resource
 
-// State :The Current State of the Resource
-type State int
+// Status :The State of the Resource
+type Status int
 
 const (
-	Pending State = iota
+	Pending Status = iota
 	Running
 	ShuttingDown
 	Destroyed
 	Stopping
 	Stopped
+	Unused
+	Error
 )
 
 // StyleClass : The css class to represent the state with
-func (s State) StyleClass() string {
+func (s Status) StyleClass() string {
 	if s == Running {
 		return "success"
 	} else if s == Pending || s == ShuttingDown || s == Stopping {

@@ -31,20 +31,34 @@ type Config struct {
 
 	Database *DatabaseConfig
 
-	// Authentication Details to login to Reka
-	Auth struct {
-		Username string
-		Password string
+	Web struct {
+		// Authentication Details to login to Reka
+		Auth struct {
+			Username string
+			Password string
+		}
 	}
 
 	staticPath string // Path to Static File
-	Exclude    []struct {
+
+	// Exclude block prevents certain resources from been tracked or affected by reka.
+	Exclude []struct {
 		Name      string
 		Region    string
 		Tags      map[string]string
 		Resources []string
 	}
 
+	// StateBackend is how state is stored (read & write)
+	// State files contain details used for infrastructure resumption and history of
+	// infrastructural management
+	StateBackend struct {
+		Type string
+		Path string
+	}
+
+	// Rules block define how reka should behave given certain resources. These rules
+	// usually target resources based on tags/labels which are attached to the resources
 	Rules []struct {
 		Name      string
 		Condition struct {
@@ -77,6 +91,8 @@ func LoadConfig() *Config {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	// Defaults
 	viper.SetDefault("StaticPath", "web/static")
+	viper.SetDefault("StateBackend.Type", "local")
+	viper.SetDefault("StateBackend.Path", path.Join(workingDir, "reka-state.json"))
 	// viper.SetDefault("DbType", "sqlite") // Default Database type is sqlite
 	viper.SetDefault("LogPath", path.Join(workingDir, "logs"))
 	viper.SetDefault("RefreshInterval", 4)             // interval between running refresh and checking for resources to updates

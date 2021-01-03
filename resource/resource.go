@@ -35,29 +35,31 @@ func (mgr Manager) String() string {
 // Resource : The Provider Interface
 // fields with `gorm:"-"` are ignored in database columns
 type Resource struct {
-	gorm.Model
-	UUID        string `gorm:"unique;not null"`
-	ManagerName string
-	Manager     *Manager `gorm:"foreignKey:ManagerName;references:Name"`
+	// Add ID, CreatedAt, UpdatedAt and DeletedAt fields
+	gorm.Model `json:"-"`
+	// UUID defines any unique field use to identify a resource. For some resources its their IDs, some their names.
+	// Not using ID because gorm.Model defines an ID field already
+	UUID        string   `gorm:"unique;not null"`
+	ManagerName string   `json:"-"`
+	Manager     *Manager `gorm:"foreignKey:ManagerName;references:Name" json:"-"`
 
 	Region string // Region of Resource
 
-	// The current state of the instance; stopped, running, pending
-	State State
+	// The state of the instance; stopped, running, pending
+	Status Status
 	// The time the instance was created on the Provider
 	CreationDate time.Time
 
-	// Error thrown during Fetching resource related data
-	FetchError error `gorm:"-"`
-	// Error thrown during Destroying the resource
-	DestroyError error `gorm:"-"`
-	// Error thrown when stopping/hibernating/pausing/shuttingdown the instance
-	StopError error `gorm:"-"`
-	// Error thrown when resuming the instance
-	ResumeError error `gorm:"-"`
+	// Attributes that the resource possess e.g. EKS Clusters have nodegroups
+	Attributes map[string]interface{}
 
 	// Tags are for AWS Instances
 	Tags Tags `gorm:"-"`
+
+	// SubResources are other resources that are part of the current resource but cannot stand as
+	// an independent resource e.g Nodegroups are subresource of EKS Clusters. Destroying an EKS Cluster
+	// destroys all nodegroups associated with it
+	SubResources map[string][]*Resource
 }
 
 func (r Resource) String() string {
@@ -66,10 +68,14 @@ func (r Resource) String() string {
 
 // IsActive return if resource is currently running
 func (r Resource) IsActive() bool {
-	return r.State == Running
+	return r.Status == Running
 }
 
 // IsStopped return whether resource is currently stopped not destroyed
 func (r Resource) IsStopped() bool {
-	return r.State == Stopped
+	return r.Status == Stopped
+}
+
+func (r Resource) IsUnused() bool {
+	return r.Status == Unused
 }

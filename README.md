@@ -11,16 +11,13 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should be used in environments with **WITH CAUTION**.
 
 ### TODO
-- [x] Bootstrap application architecture
 - [x] Schedule resource refreshing
-- [ ] Create Web Dashboard 
 - [x] generate Sample Yaml config and load config
+- [ ] Create Web Dashboard 
 - [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
-- [ ] Support Manual Trigger of resources reaping from Dashboard/CLI
-- [ ] Allow authentication username and password set in config file
+- [ ] Persist state to remote sources (GCS, S3, if possible Databases)
+- [ ] Allow web authentication username and password set in config file
 - [ ] Create Kubernetes Manifests and Helm Charts
-- [ ] Create CLI
-- [ ] Save infra state and desired state in persistent storage
 
 #### Supported Resources
 - AWS: https://github.com/MeNsaaH/reka/issues/1 
@@ -31,10 +28,11 @@ This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should b
 Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary changes
 ```bash
 cp config/config.example.yaml config/config.yaml
-
-# Start Web UI
-cd web
+# One time run
 go run main.go --config ../config/config.yaml
+
+# Web Dashboard
+go run main.go web --config ../config/config.yaml
 ```
 
 using [air](https://github.com/cosmtrek/air) with autoreload UI features

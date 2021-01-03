@@ -9,21 +9,28 @@ name: reka
 # Providers to be enabled for reka
 providers:
   - aws
-# logPath: logs/
-refreshInterval: 1
-# auth:
-#   username: blank   # Can 
-#   password: blank
-database:
-  type: sqlite
+# logPath: /path/to/logs/dir/
 
-aws:
-  # Env: AWS_SECRET_ACCESS_KEY
-  secretAccessKey: blank
-  # ENV: AWS_ACCESS_KEY_ID
-  accessKeyID: blank
-  # ENV: AWS_REGION
-  defaultRegion: us-east-2
+# Time to refresh resources in hours
+refreshInterval: 4
+
+# web
+  # auth:
+  #   username: blank   # Can 
+  #   password: blank
+
+# If not set defaults to $(pwd)/reka-state.json
+StateBackend:
+  type: local
+  path: /path/to/local/store/state
+
+# aws:
+#   # Env: AWS_SECRET_ACCESS_KEY
+#   secretAccessKey: blank
+#   # ENV: AWS_ACCESS_KEY_ID
+#   accessKeyID: blank
+#   # ENV: AWS_REGION
+#   defaultRegion: us-east-2
 
 exclude:
   - name: Exclude resources with prod tags in us-east-2
@@ -52,7 +59,8 @@ rules:
       env: test
       ci: true
     condition:
-      terminationPolicy: older than 24hrs
+      terminationPolicy:
+        - older than 24hrs
   - name: Nuke all project A instances after Demo october 9th (staging)
     tags:
       env: staging
@@ -66,7 +74,6 @@ rules:
     condition:
       terminationPolicy:
         - unused
-        - older than 48hrs
     action: terminate
 
 
