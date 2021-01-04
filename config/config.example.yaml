@@ -62,22 +62,18 @@ rules:
       env: test
       ci: true
     condition:
-      terminationPolicy:
-        - older than 24hrs
+      terminationPolicy: older than 24hrs
   - name: Nuke all project A instances after Demo october 9th (staging)
     tags:
       env: staging
       project: A
     condition:
       terminationDate: october 9
-    action: terminate
   - name: Delete all unused instances older than 48hrs (staging)
     tags:
       env: staging
     condition:
-      terminationPolicy:
-        - unused
-    action: terminate
+      terminationPolicy: unused
 
 
 timezone: Africa/Lagos

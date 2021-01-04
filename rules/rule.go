@@ -75,6 +75,8 @@ func ParseRule(rule Rule) Ruler {
 		activeRule = &ActiveDurationRule{Rule: &rule}
 	} else if rule.Condition.TerminationDate != "" {
 		activeRule = &TerminationDateRule{Rule: &rule}
+	} else if rule.Condition.TerminationPolicy != "" {
+		activeRule = &TerminationPolicyRule{Rule: &rule}
 	} else {
 		log.Fatalf("No Conditions specified for rule: `%s`", rule.Name)
 	}
