@@ -29,6 +29,7 @@ import (
 	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws"
+	"github.com/mensaah/reka/provider/gcp"
 	"github.com/mensaah/reka/resource"
 	"github.com/mensaah/reka/rules"
 	"github.com/mensaah/reka/state"
@@ -121,9 +122,11 @@ func initProviders() []*provider.Provider {
 		switch p {
 		case aws.GetName():
 			provider, err = aws.NewProvider()
-			if err != nil {
-				log.Fatal("Could not initialize AWS Provider: ", err)
-			}
+		case gcp.GetName():
+			provider, err = gcp.NewProvider()
+		}
+		if err != nil {
+			log.Fatalf("Could not initialize %s Provider: %s", p, err.Error())
 		}
 		// TODO Config providers
 		providers = append(providers, provider)

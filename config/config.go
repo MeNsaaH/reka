@@ -77,6 +77,8 @@ type Config struct {
 
 	// AWS Config
 	Aws *aws.Config
+	// Gcp configuration
+	Gcp Gcp
 }
 
 // LoadConfig load all passed configs and defaults
