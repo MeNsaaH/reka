@@ -66,7 +66,6 @@ func getS3BucketsDetails(svc *s3.Client, cfg aws.Config, output *s3.ListBucketsO
 		s3 := NewResource(*s3Bucket.Name, s3Name)
 		s3.Status = resource.Running
 		s3.Region = s3Region
-		// Get CreationDate by getting LaunchTime of attached Volume
 		s3.CreationDate = *s3Bucket.CreationDate
 		s3.Tags = tags
 		s3Buckets = append(s3Buckets, s3)
