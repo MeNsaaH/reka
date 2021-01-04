@@ -27,11 +27,9 @@ func getVolumeDetails(svc *ec2.Client, output *ec2.DescribeVolumesOutput, region
 		// Get CreationDate by getting LaunchTime of attached Volume
 		ebsResource.CreationDate = *volume.CreateTime
 		ebsResource.Tags = tags
+		ebsResource.Status = resource.Running
 		if len(volume.Attachments) == 0 {
 			ebsResource.Status = resource.Unused
-		} else {
-
-			ebsResource.Status = resource.Running
 		}
 		ebsVolumes = append(ebsVolumes, ebsResource)
 	}
