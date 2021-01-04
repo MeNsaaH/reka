@@ -24,13 +24,16 @@ StateBackend:
   type: local
   path: /path/to/local/store/state
 
-# aws:
+aws:
 #   # Env: AWS_SECRET_ACCESS_KEY
 #   secretAccessKey: blank
 #   # ENV: AWS_ACCESS_KEY_ID
 #   accessKeyID: blank
 #   # ENV: AWS_REGION
 #   defaultRegion: us-east-2
+
+gcp:
+#   projectId: Something
 
 exclude:
   - name: Exclude resources with prod tags in us-east-2
