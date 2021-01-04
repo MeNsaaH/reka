@@ -8,7 +8,8 @@ import (
 	"github.com/mensaah/reka/resource"
 )
 
-// TerminationDateRule defines rule that sets when a resource should be terminated
+// TerminationDateRule defines rule that sets when a resource should be terminated based on termination-date rule
+// set in config file. This rule checks if the set termination-date is past and activates destroy on the instance
 type TerminationDateRule struct {
 	*Rule
 	Date time.Time
@@ -69,6 +70,31 @@ func (r ActiveDurationRule) CheckResource(res *resource.Resource) Action {
 		if currentTime.Sub(r.StartTime) > 0 && currentTime.Sub(r.StopTime) <= 0 && res.IsStopped() {
 			return Resume
 		}
+	}
+	return DoNothing
+}
+
+// TerminationPolicyRule defines rule that sets when a resource should be terminated.
+type TerminationPolicyRule struct {
+	*Rule
+	Policy string
+}
+
+func (r *TerminationPolicyRule) validate() error {
+	validPolicies := []string{"unused"}
+	for _, p := range validPolicies {
+		if p == r.Condition.TerminationPolicy {
+			return nil
+		}
+	}
+	r.Policy = r.Condition.TerminationPolicy
+	return fmt.Errorf("Error parsing condition.terminationPolicy: Invalid Policy %s", r.Policy)
+}
+
+// CheckResource Returns a list of resources whose termination Date is exceeed
+func (r TerminationPolicyRule) CheckResource(res *resource.Resource) Action {
+	if res.IsUnused() {
+		return Destroy
 	}
 	return DoNothing
 }

@@ -150,8 +150,8 @@ func refreshResources(providers []*provider.Provider) {
 		// errs = provider.ResumeResources(resumableResources)
 		// fmt.Println("Errors Resuming Resources: ", errs)
 
-		// destroyableResources := provider.GetDestroyableResources(allResources)
-		// fmt.Println("Destroyable Resources: ", destroyableResources)
+		destroyableResources := provider.GetDestroyableResources(allResources)
+		fmt.Println("Destroyable Resources: ", destroyableResources)
 		// errs = provider.DestroyResources(destroyableResources)
 		// fmt.Println("Errors Destroying Resources: ", errs)
 	}
