@@ -17,13 +17,13 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"unsafe"
 
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/mensaah/reka/config"
@@ -40,7 +40,7 @@ var (
 	cfg          *config.Config
 	providers    []*provider.Provider
 	backend      state.Backender
-	currentState state.State
+	currentState *state.State
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -91,7 +91,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Info("Using config file:", viper.ConfigFileUsed())
 	}
 
 	// Load Config and Defaults
@@ -108,10 +108,8 @@ func initConfig() {
 	// Initialize Provider objects
 	providers = initProviders()
 	backend = state.InitBackend()
-	currentState = make(state.State)
 }
 
-// TODO Add logger to Providers during configuration
 func initProviders() []*provider.Provider {
 	var providers []*provider.Provider
 	for _, p := range config.GetProviders() {
@@ -135,25 +133,43 @@ func initProviders() []*provider.Provider {
 }
 
 // Refresh current status of resources from Providers
+// TODO Reconcile state so that new resources are added to desired states and former resources removed
 func refreshResources(providers []*provider.Provider) {
+	// currentState is the state stored in backend
+	currentState = backend.GetState()
+
+	currentState.Current = make(state.ProvidersState)
 	for _, provider := range providers {
 		allResources := provider.GetAllResources()
-		currentState[provider.Name] = allResources
-
-		// stoppableResources := provider.GetStoppableResources(allResources)
-		// fmt.Println("Stoppable Resources: ", stoppableResources)
-		// errs := provider.StopResources(stoppableResources)
-		// fmt.Println("Errors Stopping Resources: ", errs)
-
-		// resumableResources := provider.GetResumableResources(allResources)
-		// fmt.Println("Resumable Resources: ", resumableResources)
-		// errs = provider.ResumeResources(resumableResources)
-		// fmt.Println("Errors Resuming Resources: ", errs)
-
-		destroyableResources := provider.GetDestroyableResources(allResources)
-		fmt.Println("Destroyable Resources: ", destroyableResources)
-		// errs = provider.DestroyResources(destroyableResources)
-		// fmt.Println("Errors Destroying Resources: ", errs)
+		currentState.Current[provider.Name] = allResources
 	}
-	backend.WriteState(&currentState)
+
+	// Add new resources to desired state if they don't already exists
+	for k, v := range currentState.Current {
+		if m, ok := currentState.Desired[k]; ok || currentState.Desired[k] == nil {
+			log.Error(m)
+			// TODO Return difference between two Resources object
+			continue
+		}
+		currentState.Desired[k] = v
+	}
+
+	backend.WriteState(currentState)
+}
+
+func reapResources() {
+	// stoppableResources := provider.GetStoppableResources(allResources)
+	// fmt.Println("Stoppable Resources: ", stoppableResources)
+	// errs := provider.StopResources(stoppableResources)
+	// fmt.Println("Errors Stopping Resources: ", errs)
+
+	// resumableResources := provider.GetResumableResources(allResources)
+	// fmt.Println("Resumable Resources: ", resumableResources)
+	// errs = provider.ResumeResources(resumableResources)
+	// fmt.Println("Errors Resuming Resources: ", errs)
+
+	// destroyableResources := provider.GetDestroyableResources(allResources)
+	// fmt.Println("Destroyable Resources: ", destroyableResources)
+	// errs = provider.DestroyResources(destroyableResources)
+	// fmt.Println("Errors Destroying Resources: ", errs)
 }

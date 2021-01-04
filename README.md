@@ -31,11 +31,28 @@ cp config/config.example.yaml config/config.yaml
 # One time run
 go run main.go --config ../config/config.yaml
 
-# Web Dashboard
+# TODO Web Dashboard
 go run main.go web --config ../config/config.yaml
 ```
 
-using [air](https://github.com/cosmtrek/air) with autoreload UI features
+## Installation
+### Using go
 ```bash
-    air -c .air.toml
+go get -u github.com/mensaah/reka
+```
+
+## Usage
+
+Reka loads default config from $HOME/.reka.yaml if --config param is not passed.
+Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary changes
+
+```bash
+cp config/config.example.yaml config/config.yaml
+# Run reka using configuration. Stops stoppable resources, resume resumable resources and terminate
+# resources dues for termination
+reka --config ../config/config.yaml
+
+# KABOOOOOM
+# everything gone
+reka nuke --config ../config/config.yaml
 ```

@@ -15,7 +15,7 @@ type Backender interface {
 
 // Reader is the interface for state types that can return state resources
 type Reader interface {
-	Get() *State
+	GetState() *State
 }
 
 // Writer is the interface for state types that can write to state files
@@ -31,8 +31,10 @@ func InitBackend() Backender {
 	switch cfg.StateBackend.Type {
 	default:
 		log.Debugf("using Local State at %s", cfg.StateBackend.Path)
+		s := NewEmptyState()
 		backend = LocalBackend{
-			Path: cfg.StateBackend.Path,
+			Path:  cfg.StateBackend.Path,
+			state: &s,
 		}
 	}
 	return backend

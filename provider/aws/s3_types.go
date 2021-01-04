@@ -9,7 +9,7 @@ import (
 
 const (
 	// Name of resource
-	s3Name = "S3"
+	s3Name = "s3"
 	// LongName descriptive name for resource
 	s3LongName = "Simple Storage Service"
 )
