@@ -12,7 +12,7 @@ var eipManager resource.Manager
 
 const (
 	// Name of resource
-	eipName = "EIP"
+	eipName = "eip"
 	// LongName descriptive name for resource
 	eipLongName = "Elastic IP"
 )

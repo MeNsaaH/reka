@@ -14,7 +14,7 @@ var ec2Manager resource.Manager
 
 const (
 	// Name of resource
-	ec2Name = "EC2"
+	ec2Name = "ec2"
 	// LongName descriptive name for resource
 	ec2LongName = "Elastic Compute Cloud"
 )

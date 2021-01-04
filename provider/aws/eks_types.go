@@ -14,7 +14,7 @@ var eksManager resource.Manager
 
 const (
 	// Name of resource
-	eksName = "EKS"
+	eksName = "eks"
 	// LongName descriptive name for resource
 	eksLongName = "Elastic Compute Cloud"
 

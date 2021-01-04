@@ -16,11 +16,11 @@ type LocalBackend struct {
 	Path  string
 }
 
-// Get returns state from local source
-func (s LocalBackend) Get() *State {
-	if s.state.empty() {
+// GetState returns state from local source
+func (s LocalBackend) GetState() *State {
+	if s.state.Empty() {
 		if _, err := os.Stat(s.Path); os.IsNotExist(err) {
-			s.state = &State{}
+			log.Debugf("State file not found, using empty state")
 			return s.state
 		}
 		stateFile, err := os.Open(s.Path)
