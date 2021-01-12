@@ -23,6 +23,7 @@ This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should b
 - AWS: https://github.com/MeNsaaH/reka/issues/1 
 - GCP: https://github.com/MeNsaaH/reka/issues/2 
 
+Here is a list of all [supported resources](./supported-resources.md) 
 
 ## Development
 Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary changes
@@ -30,9 +31,6 @@ Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary
 cp config/config.example.yaml config/config.yaml
 # One time run
 go run main.go --config ../config/config.yaml
-
-# TODO Web Dashboard
-go run main.go web --config ../config/config.yaml
 ```
 
 ## Installation
@@ -50,9 +48,5 @@ Copy `config/config.example.yaml` to `config/config.yaml` and make all necessary
 cp config/config.example.yaml config/config.yaml
 # Run reka using configuration. Stops stoppable resources, resume resumable resources and terminate
 # resources dues for termination
-reka --config ../config/config.yaml
-
-# KABOOOOOM
-# everything gone
-reka nuke --config ../config/config.yaml
+reka --config config/config.yaml
 ```

@@ -27,9 +27,9 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/provider"
 	"github.com/mensaah/reka/provider/aws"
 	"github.com/mensaah/reka/provider/gcp"
+	"github.com/mensaah/reka/provider/types"
 	"github.com/mensaah/reka/resource"
 	"github.com/mensaah/reka/rules"
 	"github.com/mensaah/reka/state"
@@ -38,7 +38,7 @@ import (
 var (
 	cfgFile     string
 	cfg         *config.Config
-	providers   []*provider.Provider
+	providers   []*types.Provider
 	backend     state.Backender
 	activeState *state.State
 )
@@ -130,11 +130,11 @@ func initConfig() {
 	backend = state.InitBackend()
 }
 
-func initProviders() []*provider.Provider {
-	var providers []*provider.Provider
+func initProviders() []*types.Provider {
+	var providers []*types.Provider
 	for _, p := range config.GetProviders() {
 		var (
-			provider *provider.Provider
+			provider *types.Provider
 			err      error
 		)
 		switch p {
@@ -154,7 +154,7 @@ func initProviders() []*provider.Provider {
 
 // Refresh current status of resources from Providers
 // TODO Reconcile state so that new resources are added to desired states and former resources removed
-func refreshResources(providers []*provider.Provider) {
+func refreshResources(providers []*types.Provider) {
 	// activeState is the current state stored in backend
 	activeState = backend.GetState()
 
