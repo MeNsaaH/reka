@@ -2,7 +2,6 @@ package state
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -40,12 +39,11 @@ func (s LocalBackend) GetState() *State {
 // WriteState writes state to local path
 func (s LocalBackend) WriteState(st *State) error {
 	log.Debugf("Writing state to %s\n", s.Path)
-	file, err := json.MarshalIndent(st, "", " ")
+	data, err := json.MarshalIndent(st, "", " ")
 	if err != nil {
 		log.Fatal("Failed to Load State for Writing")
 	}
-	fmt.Println(string(file))
-	err = ioutil.WriteFile(s.Path, file, 0644)
+	err = ioutil.WriteFile(s.Path, data, 0644)
 	if err != nil {
 		log.Fatal("Failed to write state to file")
 	}

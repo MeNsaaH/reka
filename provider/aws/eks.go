@@ -142,9 +142,13 @@ func ResumeEKSClusters(cfg aws.Config, clusters []*resource.Resource) error {
 		return nil
 	}
 	for _, clsr := range clusters {
+		desired, err := utils.GetResourceFromDesiredState(providerName, eksName, clsr.UUID)
+		if err != nil {
+			eksLogger.Error(err.Error())
+			continue
+		}
 		eksLogger.Debugf("Stopping EKS Clusters %s ...", clsr)
-		for _, ng := range clsr.SubResources[nodegroupName] {
-			// TODO get value of desired size from state
+		for _, ng := range desired.SubResources[nodegroupName] {
 			desiredSize, _ := ng.Attributes["DesiredSize"].(int32)
 			err := resizeNodeGroup(svc, clsr.UUID, ng.UUID, desiredSize)
 			if err != nil {

@@ -39,3 +39,8 @@ func InitBackend() Backender {
 	}
 	return backend
 }
+
+// GetBackend gets the current active backend
+func GetBackend() Backender {
+	return backend
+}

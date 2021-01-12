@@ -97,8 +97,10 @@ func (p *Provider) GetStoppableResources(resources Resources) Resources {
 				}
 			}
 		}
-		count += len(stoppableResList)
-		stoppableResources[mgrName] = stoppableResList
+		if p.getManager(mgrName).Stop != nil && p.getManager(mgrName).Resume != nil {
+			count += len(stoppableResList)
+			stoppableResources[mgrName] = stoppableResList
+		}
 	}
 	p.Logger.Infof("Found %d resources to be stopped", count)
 	return stoppableResources
@@ -118,9 +120,11 @@ func (p *Provider) GetResumableResources(resources Resources) Resources {
 				}
 			}
 		}
-		resumableResource[mgrName] = resumableResList
+		if p.getManager(mgrName).Stop != nil && p.getManager(mgrName).Resume != nil {
+			resumableResource[mgrName] = resumableResList
+			count += len(resumableResList)
+		}
 	}
-	count += len(resumableResource)
 	p.Logger.Infof("Found %d resources to be resumed", count)
 	return resumableResource
 }

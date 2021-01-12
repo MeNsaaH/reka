@@ -48,6 +48,10 @@ exclude:
 # Rules for stopping, resuming and terminating instances
 rules:
   - name: Pause all staging instances on a weekend (staging)
+    # Target specific resource types
+    target:
+      - aws.ec2
+      - aws.ebs
     tags:
       env: staging
     condition:
