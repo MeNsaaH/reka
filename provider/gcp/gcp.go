@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/provider/types"
 	"github.com/mensaah/reka/resource"
 )
 
@@ -28,9 +28,9 @@ func NewResource(id, manager string) *resource.Resource {
 }
 
 // NewProvider : Creates a New AWS Provider
-func NewProvider() (*provider.Provider, error) {
+func NewProvider() (*types.Provider, error) {
 
-	gcp := provider.Provider{}
+	gcp := types.Provider{}
 	gcp.Name = providerName
 
 	gcp.SetLogger("logger.log")

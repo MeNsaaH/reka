@@ -32,8 +32,14 @@ func (mgr Manager) String() string {
 	return mgr.Name
 }
 
+func (mgr Manager) IsStoppable() bool {
+	return mgr.Stop != nil && mgr.Resume != nil
+}
+
 // Resource : The Provider Interface
 // fields with `gorm:"-"` are ignored in database columns
+// TODO create dependent Resource field. And ensure dependent resources are first destroyed before
+// destruction of resource happens
 type Resource struct {
 	// Add ID, CreatedAt, UpdatedAt and DeletedAt fields
 	gorm.Model `json:"-"`

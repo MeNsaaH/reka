@@ -2,7 +2,7 @@ package state
 
 import (
 	"github.com/mensaah/reka/config"
-	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/provider/types"
 )
 
 var backend Backender
@@ -14,7 +14,7 @@ var cfg *config.Config
 // 		s3: [ Resource1, Resource2 ]
 //    }
 //  }
-type ProvidersState map[string]provider.Resources
+type ProvidersState map[string]types.Resources
 
 // State object: Represents a reka state consisting of current and desired state
 // Desired state is used for resumption of resources. It stores the attributes of the resource to resume to

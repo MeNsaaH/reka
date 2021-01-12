@@ -3,7 +3,7 @@ package models
 import (
 	"gorm.io/gorm/clause"
 
-	"github.com/mensaah/reka/provider"
+	"github.com/mensaah/reka/provider/types"
 	"github.com/mensaah/reka/resource"
 )
 
@@ -21,7 +21,7 @@ func CreateOrUpdateResources(resources []*resource.Resource) error {
 }
 
 // CreateAllManagers : Creates all resource managers
-func CreateAllManagers(providers []*provider.Provider) error {
+func CreateAllManagers(providers []*types.Provider) error {
 	// Update columns to new value on `id` conflict
 
 	var err error

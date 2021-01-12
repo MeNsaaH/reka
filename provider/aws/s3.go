@@ -124,7 +124,7 @@ func destroyS3Buckets(cfg aws.Config, s3Buckets []*resource.Resource) error {
 		bucketsPerRegion[bucket.Region] = append(bucketsPerRegion[bucket.Region], bucket)
 	}
 
-	// TODO Use Goroutines
+	// TODO Use Goroutines and also destroy all objects in the bucket before executing destroy on bucket
 	for region, buckets := range bucketsPerRegion {
 		svc := s3.NewFromConfig(cfg, func(options *s3.Options) {
 			options.Region = region
