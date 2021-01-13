@@ -13,16 +13,14 @@ This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should b
 ### TODO
 - [x] Schedule resource refreshing
 - [x] generate Sample Yaml config and load config
-- [ ] Create Web Dashboard 
-- [ ] Allow users to specify tags/resources to track from reka UI with reaping Details
-- [ ] Persist state to remote sources (GCS, S3, if possible Databases)
-- [ ] Allow web authentication username and password set in config file
-- [ ] Create Kubernetes Manifests and Helm Charts
+- [ ] [Create Web Dashboard](https://github.com/MeNsaaH/reka/issues/3)
+- [ ] [Persist state to remote sources](https://github.com/MeNsaaH/reka/issues/4)
+- [ ] [Dockerize application](https://github.com/MeNsaaH/reka/issues/5)
+- [ ] [Add AWS Resources](https://github.com/MeNsaaH/reka/issues/1)
+- [ ] [Add GCP Resources](https://github.com/MeNsaaH/reka/issues/2)
+- [ ] [Add Azure Resources](https://github.com/MeNsaaH/reka/issues/6)
 
 #### Supported Resources
-- AWS: https://github.com/MeNsaaH/reka/issues/1 
-- GCP: https://github.com/MeNsaaH/reka/issues/2 
-
 Here is a list of all [supported resources](./supported-resources.md) 
 
 ## Development
