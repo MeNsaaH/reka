@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	cloud.google.com/go/storage v1.0.0
-	github.com/alvaroloes/enumer v1.1.2 // indirect
 	github.com/aws/aws-sdk-go-v2 v0.31.0
 	github.com/aws/aws-sdk-go-v2/config v0.4.0
 	github.com/aws/aws-sdk-go-v2/credentials v0.2.0
@@ -17,12 +16,10 @@ require (
 	github.com/jinzhu/now v1.1.1
 	github.com/labstack/gommon v0.3.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/rs/zerolog v1.15.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	google.golang.org/api v0.13.0
-	google.golang.org/appengine v1.6.1
 	gorm.io/driver/postgres v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.9
