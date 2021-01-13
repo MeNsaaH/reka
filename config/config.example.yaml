@@ -9,6 +9,7 @@ name: reka
 # Providers to be enabled for reka
 providers:
   - aws
+  - gcp
 # logPath: /path/to/logs/dir/
 
 # Time to refresh resources in hours
@@ -61,18 +62,18 @@ rules:
         startDay: Monday
         stopDay: Friday
       region: "us-east-2"
-  - name: Delete all tests instances older than 24hrs (test)
-    tags:
-      env: test
-      ci: true
-    condition:
-      terminationPolicy: older than 24hrs
+  # - name: Delete all tests instances older than 24hrs (test)
+  #   tags:
+  #     env: test
+  #     ci: true
+  #   condition:
+  #     terminationPolicy: older than 24hrs
   - name: Nuke all project A instances after Demo october 9th (staging)
     tags:
       env: staging
       project: A
     condition:
-      terminationDate: october 9
+      terminationDate: "2020-11-05 11:00"
   - name: Delete all unused instances older than 48hrs (staging)
     tags:
       env: staging

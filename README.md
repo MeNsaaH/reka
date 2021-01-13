@@ -1,6 +1,11 @@
 # reka
 > Never forget that instance running again
 
+<br>
+
+[![Build Status](https://github.com/mensaah/reka/workflows/Test/badge.svg)](https://github.com/mensaah/reka/actions)
+
+
 A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resources based on tags
 
 ### Project Name
