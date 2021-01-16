@@ -15,12 +15,16 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 
 This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should be used in environments with **WITH CAUTION**.
 
+## What Does this tool do?
+- Stop/Resume resources based on configuration (activeDuration) for instance stopping an EKS cluster would mean resizing all nodegroups to 0 and resuming will be restoring back to original size
+- Destroy resources that have specific tags/labels or after a certain Duration(terminationDate)
+- Clean Up unused resources (such as EBS volumes, Elastic IPs)
+
 ### TODO
 - [x] Schedule resource refreshing
 - [x] generate Sample Yaml config and load config
 - [ ] [Create Web Dashboard](https://github.com/MeNsaaH/reka/issues/3)
 - [ ] [Persist state to remote sources](https://github.com/MeNsaaH/reka/issues/4)
-- [ ] [Dockerize application](https://github.com/MeNsaaH/reka/issues/5)
 - [ ] [Add AWS Resources](https://github.com/MeNsaaH/reka/issues/1)
 - [ ] [Add GCP Resources](https://github.com/MeNsaaH/reka/issues/2)
 - [ ] [Add Azure Resources](https://github.com/MeNsaaH/reka/issues/6)
@@ -53,3 +57,6 @@ cp config/config.example.yaml config/config.yaml
 # resources dues for termination
 reka --config config/config.yaml
 ```
+
+###  Authentication
+Reka uses the default authentication method for all providers
