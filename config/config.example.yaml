@@ -24,6 +24,10 @@ refreshInterval: 4
 StateBackend:
   type: local
   path: /path/to/local/store/state
+#StateBackend:
+#  type: s3
+#  bucket: bucket_name
+#  path: path/to/local/store
 
 aws:
 #   # Env: AWS_SECRET_ACCESS_KEY
@@ -83,3 +87,16 @@ rules:
 
 timezone: Africa/Lagos
 # timezone: UTC+1
+
+# # Example remote state backends
+#StateBackend:
+#  type: s3
+#  bucket: random
+#  path: tracks/reka-store.json
+#  region: us-east-2
+
+#StateBackend:
+#  type: azblob
+#  bucket: random
+#  path: tracks/reka-store.json
+

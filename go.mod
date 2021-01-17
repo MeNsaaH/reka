@@ -3,7 +3,7 @@ module github.com/mensaah/reka
 go 1.14
 
 require (
-	cloud.google.com/go/storage v1.0.0
+	cloud.google.com/go/storage v1.12.0
 	github.com/aws/aws-sdk-go-v2 v0.31.0
 	github.com/aws/aws-sdk-go-v2/config v0.4.0
 	github.com/aws/aws-sdk-go-v2/credentials v0.2.0
@@ -19,7 +19,8 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
-	google.golang.org/api v0.13.0
+	gocloud.dev v0.21.0
+	google.golang.org/api v0.36.0
 	gorm.io/driver/postgres v1.0.6
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.20.9
