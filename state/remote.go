@@ -21,6 +21,7 @@ type RemoteBackend struct {
 	Path     string
 	Bucket   string
 	BlobType string
+	Region   string
 }
 
 // GetState returns state from remote source
@@ -72,6 +73,9 @@ func (s RemoteBackend) getBucket() (*blob.Bucket, context.Context) {
 	// Open a connection to the bucket.
 	bucketURL := fmt.Sprintf("%s://%s",
 		s.BlobType, s.Bucket)
+	if s.BlobType == "s3" {
+		bucketURL = fmt.Sprintf("%s?region=%s", bucketURL, s.Region)
+	}
 	bucket, err := blob.OpenBucket(ctx, bucketURL)
 	if err != nil {
 		log.Fatalf("Failed to setup bucket: %s", err)

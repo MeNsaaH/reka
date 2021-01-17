@@ -56,6 +56,7 @@ type Config struct {
 		Type   string
 		Path   string
 		Bucket string
+		Region string
 	}
 
 	// Rules block define how reka should behave given certain resources. These rules
@@ -141,6 +142,9 @@ func LoadConfig() *Config {
 		if config.StateBackend.Type != StateBackendTypes[0] {
 			if config.StateBackend.Bucket == "" || config.StateBackend.Path == "" {
 				log.Fatalf("State Backend (type: %s) - bucket and path must be set in config", config.StateBackend.Type)
+			}
+			if config.StateBackend.Type == "s3" && config.StateBackend.Region == "" {
+				log.Fatal("State Backend (type: s3) - Must configure Region")
 			}
 		}
 	}

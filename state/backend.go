@@ -37,6 +37,7 @@ func InitBackend() Backender {
 			state:    &s,
 			Bucket:   cfg.StateBackend.Bucket,
 			BlobType: cfg.StateBackend.Type,
+			Region:   cfg.StateBackend.Region,
 		}
 	default:
 		log.Debugf("using Local State at %s", cfg.StateBackend.Path)
