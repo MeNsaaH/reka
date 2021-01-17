@@ -3,7 +3,7 @@ project_name: reka
 builds:
 - env:
   - CGO_ENABLED=0
-  binary: gophie
+  binary: reka
   goos:
       - windows
       - darwin

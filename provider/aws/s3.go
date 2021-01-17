@@ -14,6 +14,11 @@ import (
 	"github.com/mensaah/reka/resource"
 )
 
+type Object struct {
+	Key       *string
+	VersionId *string
+}
+
 func getS3BucketRegion(cfg aws.Config, bucketName string) (string, error) {
 
 	region, err := s3manager.GetBucketRegion(context.TODO(), s3.NewFromConfig(cfg), bucketName)
@@ -94,18 +99,98 @@ func getAllS3Buckets(cfg aws.Config) ([]*resource.Resource, error) {
 	return buckets, nil
 }
 
+func getAllObjects(svc *s3.Client, bucketName *string, isVersioned bool) ([]*Object, error) {
+	var objects []*Object
+	if !isVersioned {
+		// Set the parameters based on the CLI flag inputs.
+		params := &s3.ListObjectsV2Input{
+			Bucket: bucketName,
+		}
+		// Create the Paginator for the ListObjectsV2 operation.
+		p := s3.NewListObjectsV2Paginator(svc, params, func(o *s3.ListObjectsV2PaginatorOptions) {
+			if v := int32(0); v != 0 {
+				o.Limit = v
+			}
+		})
+
+		// Iterate through the S3 object pages, printing each object returned.
+		var i int
+		log.Println("Objects:")
+		for p.HasMorePages() {
+			i++
+			// Next Page takes a new context for each page retrieval. This is where
+			// you could add timeouts or deadlines.
+			page, err := p.NextPage(context.TODO())
+			if err != nil {
+				log.Fatalf("failed to get page %v, %v", i, err)
+			}
+
+			// Log the objects found
+			for _, obj := range page.Contents {
+				fmt.Println("Object:", *obj.Key)
+				objects = append(objects, &Object{Key: obj.Key})
+			}
+		}
+		return objects, nil
+	}
+
+	p, err := svc.ListObjectVersions(context.TODO(), &s3.ListObjectVersionsInput{
+		Bucket: bucketName,
+	})
+	for _, obj := range p.Versions {
+		s3Logger.Debugf("Bucket %s object %s version %s", *bucketName, *obj.Key, *obj.VersionId)
+		objects = append(objects, &Object{
+			Key:       obj.Key,
+			VersionId: obj.VersionId,
+		})
+	}
+	for _, obj := range p.DeleteMarkers {
+		s3Logger.Debugf("Bucket %s object %s DeleteMarker %s", *bucketName, *obj.Key, *obj.VersionId)
+		objects = append(objects, &Object{
+			Key:       obj.Key,
+			VersionId: obj.VersionId,
+		})
+	}
+	return objects, err
+}
+
 // Empties a Bucket
-func emptyBucket(svc *s3.Client, bucket *resource.Resource) error {
+func emptyBucket(svc *s3.Client, bucketName string) error {
+	versioningResult, err := svc.GetBucketVersioning(context.TODO(), &s3.GetBucketVersioningInput{
+		Bucket: &bucketName,
+	})
+	if err != nil {
+		return err
+	}
+
+	objects, err := getAllObjects(svc, &bucketName, versioningResult.Status == s3Types.BucketVersioningStatusEnabled)
+
+	for _, obj := range objects {
+		deleteParams := &s3.DeleteObjectInput{
+			Bucket:    &bucketName,
+			Key:       obj.Key,
+			VersionId: obj.VersionId,
+		}
+		_, err = svc.DeleteObject(context.TODO(), deleteParams)
+		if err != nil {
+			log.Errorf("Failed to delete object %s: %s", *obj.Key, err.Error())
+		}
+	}
 	return nil
 }
 
 // Destroys a Single Bucket
 func destroyBucket(svc *s3.Client, bucket *resource.Resource) error {
+	err := emptyBucket(svc, bucket.UUID)
+	if err != nil {
+		return err
+	}
+
 	input := &s3.DeleteBucketInput{
 		Bucket: aws.String(bucket.UUID),
 	}
 
-	_, err := svc.DeleteBucket(context.TODO(), input)
+	_, err = svc.DeleteBucket(context.TODO(), input)
 	if err != nil {
 		return err
 	}
