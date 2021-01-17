@@ -30,7 +30,7 @@ func InitBackend() Backender {
 	cfg = config.GetConfig()
 	s := NewEmptyState()
 	switch {
-	case config.Contains(config.StateBackendTypes[1:], cfg.StateBackend.Type):
+	case config.Contains(config.RemoteBackendTypes, cfg.StateBackend.Type):
 		log.Infof("using Remote StateBackend %s://%s/%s", cfg.StateBackend.Type, cfg.StateBackend.Bucket, cfg.StateBackend.Path)
 		backend = RemoteBackend{
 			Path:     cfg.StateBackend.Path,

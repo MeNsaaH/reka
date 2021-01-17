@@ -83,8 +83,14 @@ type Config struct {
 	Gcp Gcp
 }
 
-// Allowed StateBackend Types
-var StateBackendTypes = []string{"local", "s3", "azblob", "gs"}
+// RemoteBackendTypes allowed remote storage
+var RemoteBackendTypes = []string{"s3", "azblob", "gs"}
+
+// LocalBackendTypes local backend storage
+var LocalBackendTypes = []string{"local"}
+
+// StateBackendTypes all state backend storage types
+var StateBackendTypes = append(RemoteBackendTypes, LocalBackendTypes...)
 
 // LoadConfig load all passed configs and defaults
 func LoadConfig() *Config {
@@ -139,7 +145,7 @@ func LoadConfig() *Config {
 		log.Fatalf("State Backend Type is not permitted, Please use one of %s", StateBackendTypes)
 
 	} else {
-		if config.StateBackend.Type != StateBackendTypes[0] {
+		if Contains(RemoteBackendTypes, config.StateBackend.Type) {
 			if config.StateBackend.Bucket == "" || config.StateBackend.Path == "" {
 				log.Fatalf("State Backend (type: %s) - bucket and path must be set in config", config.StateBackend.Type)
 			}
