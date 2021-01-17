@@ -53,8 +53,9 @@ type Config struct {
 	// State files contain details used for infrastructure resumption and history of
 	// infrastructural management
 	StateBackend struct {
-		Type string
-		Path string
+		Type   string
+		Path   string
+		Bucket string
 	}
 
 	// Rules block define how reka should behave given certain resources. These rules
@@ -80,6 +81,9 @@ type Config struct {
 	// Gcp configuration
 	Gcp Gcp
 }
+
+// Allowed StateBackend Types
+var StateBackendTypes = []string{"local", "s3", "azblob", "gs"}
 
 // LoadConfig load all passed configs and defaults
 func LoadConfig() *Config {
@@ -130,6 +134,17 @@ func LoadConfig() *Config {
 		log.Fatal("No providers specified. Reka needs atleast one provider to monitor")
 	}
 
+	if !Contains(StateBackendTypes, config.StateBackend.Type) {
+		log.Fatalf("State Backend Type is not permitted, Please use one of %s", StateBackendTypes)
+
+	} else {
+		if config.StateBackend.Type != StateBackendTypes[0] {
+			if config.StateBackend.Bucket == "" || config.StateBackend.Path == "" {
+				log.Fatalf("State Backend (type: %s) - bucket and path must be set in config", config.StateBackend.Type)
+			}
+		}
+	}
+
 	if !path.IsAbs(viper.GetString("StaticPath")) {
 		config.staticPath = path.Join(workingDir, viper.GetString("StaticPath"))
 	}
@@ -149,6 +164,16 @@ func LoadConfig() *Config {
 	}
 
 	return config
+}
+
+// Contains check if array contains value
+func Contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }
 
 // GetConfig return the config object

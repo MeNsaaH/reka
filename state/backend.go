@@ -28,10 +28,18 @@ type Writer interface {
 // The appropriate backend
 func InitBackend() Backender {
 	cfg = config.GetConfig()
-	switch cfg.StateBackend.Type {
+	s := NewEmptyState()
+	switch {
+	case config.Contains(config.StateBackendTypes[1:], cfg.StateBackend.Type):
+		log.Infof("using Remote StateBackend %s://%s/%s", cfg.StateBackend.Type, cfg.StateBackend.Bucket, cfg.StateBackend.Path)
+		backend = RemoteBackend{
+			Path:     cfg.StateBackend.Path,
+			state:    &s,
+			Bucket:   cfg.StateBackend.Bucket,
+			BlobType: cfg.StateBackend.Type,
+		}
 	default:
 		log.Debugf("using Local State at %s", cfg.StateBackend.Path)
-		s := NewEmptyState()
 		backend = LocalBackend{
 			Path:  cfg.StateBackend.Path,
 			state: &s,
