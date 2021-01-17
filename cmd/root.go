@@ -41,6 +41,7 @@ var (
 	providers   []*types.Provider
 	backend     state.Backender
 	activeState *state.State
+	verbose     bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -51,6 +52,21 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		// Load Config and Defaults
+		config.LoadConfig()
+
+		cfg = config.GetConfig()
+
+		for _, rule := range cfg.Rules {
+			// Convert Rule in config to rules.Rule type
+			r := *((*rules.Rule)(unsafe.Pointer(&rule)))
+			r.Tags = resource.Tags(rule.Tags)
+			rules.ParseRule(r)
+		}
+
+		// Initialize Provider objects
+		providers = initProviders()
+		backend = state.InitBackend()
 		// RefreshResources on every execution
 		refreshResources(providers)
 		for _, p := range providers {
@@ -87,6 +103,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.reka.yaml)")
 	rootCmd.Flags().BoolP("unused-only", "t", false, "Reap only unused resources")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Output verbose logs (DEBUG)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -114,20 +131,11 @@ func initConfig() {
 		log.Info("Using config file:", viper.ConfigFileUsed())
 	}
 
-	// Load Config and Defaults
-	config.LoadConfig()
-	cfg = config.GetConfig()
-
-	for _, rule := range cfg.Rules {
-		// Convert Rule in config to rules.Rule type
-		r := *((*rules.Rule)(unsafe.Pointer(&rule)))
-		r.Tags = resource.Tags(rule.Tags)
-		rules.ParseRule(r)
+	if verbose {
+		config.SetVerboseLogging()
+		log.SetLevel(log.DebugLevel)
 	}
 
-	// Initialize Provider objects
-	providers = initProviders()
-	backend = state.InitBackend()
 }
 
 func initProviders() []*types.Provider {
@@ -146,14 +154,12 @@ func initProviders() []*types.Provider {
 		if err != nil {
 			log.Fatalf("Could not initialize %s Provider: %s", p, err.Error())
 		}
-		// TODO Config providers
 		providers = append(providers, provider)
 	}
 	return providers
 }
 
 // Refresh current status of resources from Providers
-// TODO Reconcile state so that new resources are added to desired states and former resources removed
 func refreshResources(providers []*types.Provider) {
 	// activeState is the current state stored in backend
 	activeState = backend.GetState()
@@ -166,8 +172,6 @@ func refreshResources(providers []*types.Provider) {
 
 	// Add new resources to desired state if they don't already exists
 	// this is to ensure all new resources created are also added to reka's desired state
-	// too many for loops 😫
-	// TODO check for attribute changes not in desired state for instance, if node pool was scaled
 	for currentProvider, currentProviderResources := range activeState.Current {
 		if _, ok := activeState.Desired[currentProvider]; ok {
 			for u, w := range currentProviderResources {
@@ -187,9 +191,6 @@ func refreshResources(providers []*types.Provider) {
 	}
 
 	backend.WriteState(activeState)
-}
-
-func reapResources() {
 }
 
 func containsResource(res []*resource.Resource, r *resource.Resource) bool {
