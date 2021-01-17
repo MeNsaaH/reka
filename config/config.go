@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	config     *Config
+	config     = &Config{}
 	workingDir string
 	err        error
 )
@@ -28,6 +28,7 @@ type Config struct {
 	Timezone        string
 	RefreshInterval int32
 	LogPath         string
+	Verbose         bool
 
 	Database *DatabaseConfig
 
@@ -209,4 +210,9 @@ func StaticPath() string {
 // GetProviders returns list of selected providers
 func GetProviders() []string {
 	return config.Providers
+}
+
+// SetVerboseLogging sets logging to be in DEBUG mode
+func SetVerboseLogging() {
+	config.Verbose = true
 }

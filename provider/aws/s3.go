@@ -36,7 +36,7 @@ func getS3BucketRegion(cfg aws.Config, bucketName string) (string, error) {
 }
 
 func getS3BucketTags(svc *s3.Client, bucketName string) (resource.Tags, error) {
-	s3Logger.Debug("Fetching S3 Tags")
+	s3Logger.Debugf("Fetching S3 Tags for %s", bucketName)
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(bucketName),
 	}
