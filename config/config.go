@@ -21,6 +21,41 @@ const (
 	appName = "REKA"
 )
 
+type ExcludeRule struct {
+	Name      string
+	Region    string
+	Tags      map[string]string
+	Resources []string
+}
+
+type Rule struct {
+	Name      string
+	Condition struct {
+		ActiveDuration struct {
+			StartTime string
+			StopTime  string
+			StartDay  string
+			StopDay   string
+		}
+		TerminationPolicy string
+		TerminationDate   string
+	}
+	Resources []string
+	Region    string
+	Tags      map[string]string
+}
+
+func (r Rule) String() string {
+	return r.Name
+}
+
+type Backend struct {
+	Type   string
+	Path   string
+	Bucket string
+	Region string
+}
+
 // Config : The Config values passed to application
 type Config struct {
 	Name            string
@@ -43,41 +78,15 @@ type Config struct {
 	staticPath string // Path to Static File
 
 	// Exclude block prevents certain resources from been tracked or affected by reka.
-	Exclude []struct {
-		Name      string
-		Region    string
-		Tags      map[string]string
-		Resources []string
-	}
+	Exclude []*ExcludeRule
 
 	// StateBackend is how state is stored (read & write)
 	// State files contain details used for infrastructure resumption and history of
 	// infrastructural management
-	StateBackend struct {
-		Type   string
-		Path   string
-		Bucket string
-		Region string
-	}
-
+	StateBackend *Backend
 	// Rules block define how reka should behave given certain resources. These rules
 	// usually target resources based on tags/labels which are attached to the resources
-	Rules []struct {
-		Name      string
-		Condition struct {
-			ActiveDuration struct {
-				StartTime string
-				StopTime  string
-				StartDay  string
-				StopDay   string
-			}
-			TerminationPolicy string
-			TerminationDate   string
-		}
-		Region string
-		Tags   map[string]string
-	}
-
+	Rules []*Rule
 	// AWS Config
 	Aws *aws.Config
 	// Gcp configuration

@@ -26,6 +26,9 @@ func (r *TerminationDateRule) validate() error {
 
 // CheckResource Returns a list of resources whose termination Date is exceeed
 func (r TerminationDateRule) CheckResource(res *resource.Resource) Action {
+	if r.shouldExcludeResource(res) {
+		return DoNothing
+	}
 	if hasTags(res, r.Tags) {
 		currentDate := time.Now()
 		if int(r.Date.Sub(currentDate)) <= 0 {
@@ -60,6 +63,9 @@ func (r *ActiveDurationRule) validate() error {
 
 // CheckResource Returns a list of resources activeDuration is valid
 func (r ActiveDurationRule) CheckResource(res *resource.Resource) Action {
+	if r.shouldExcludeResource(res) {
+		return DoNothing
+	}
 	if hasTags(res, r.Tags) {
 		currentTime := time.Now()
 		// Initialize Stopping only if currentTime is not within active duration
@@ -93,6 +99,9 @@ func (r *TerminationPolicyRule) validate() error {
 
 // CheckResource Returns a list of resources whose termination Date is exceeed
 func (r TerminationPolicyRule) CheckResource(res *resource.Resource) Action {
+	if r.shouldExcludeResource(res) {
+		return DoNothing
+	}
 	if res.IsUnused() {
 		return Destroy
 	}

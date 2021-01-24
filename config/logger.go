@@ -22,5 +22,6 @@ func GetLogger(mgrName, logPath string) *log.Entry {
 	}
 	return logger.WithFields(log.Fields{
 		"resource": mgrName,
+		"provider": mgrName,
 	})
 }

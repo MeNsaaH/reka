@@ -147,7 +147,7 @@ func (p *Provider) GetUnusedResources(resources Resources) Resources {
 // DestroyResources : Return the resources which can be destroyed
 func (p *Provider) DestroyResources(resources Resources) map[string]error {
 	errs := make(map[string]error)
-	p.Logger.Debugf("Destroying Resources...")
+	p.Logger.Info("Destroying Resources...")
 	var wg sync.WaitGroup
 
 	for mgrName, res := range resources {
