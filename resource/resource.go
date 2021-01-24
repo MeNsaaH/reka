@@ -2,6 +2,7 @@ package resource
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -45,9 +46,9 @@ type Resource struct {
 	gorm.Model `json:"-"`
 	// UUID defines any unique field use to identify a resource. For some resources its their IDs, some their names.
 	// Not using ID because gorm.Model defines an ID field already
-	UUID        string   `gorm:"unique;not null"`
-	ManagerName string   `json:"-"`
-	Manager     *Manager `gorm:"foreignKey:ManagerName;references:Name" json:"-"`
+	UUID         string   `gorm:"unique;not null"`
+	Manager      *Manager `gorm:"foreignKey:ManagerName;references:Name" json:"-"`
+	ProviderName string
 
 	Region string // Region of Resource
 
@@ -84,4 +85,11 @@ func (r Resource) IsStopped() bool {
 
 func (r Resource) IsUnused() bool {
 	return r.Status == Unused
+}
+
+// Uri a simple uri of the resource in the form provider.resource_type for example ec2 instances will have the
+// url aws.ec2
+func (r Resource) Uri() string {
+	return fmt.Sprintf("%s.%s", strings.ToLower(r.ProviderName), strings.ToLower(r.Manager.Name))
+
 }

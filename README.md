@@ -26,7 +26,7 @@ This tool is **HIGHLY DESTRUCTIVE** and can deletes all resources! This should b
 - [x] [Persist state to remote sources](https://github.com/MeNsaaH/reka/issues/4)
 - [ ] [Add More AWS Resources](https://github.com/MeNsaaH/reka/issues/1)
 - [ ] [Add More GCP Resources](https://github.com/MeNsaaH/reka/issues/2)
-- [ ] [Add More Azure Resources](https://github.com/MeNsaaH/reka/issues/6)
+- [ ] [Add MoreAzure Resources](https://github.com/MeNsaaH/reka/issues/6)
 - [ ] [Create Web Dashboard](https://github.com/MeNsaaH/reka/issues/3)
 
 #### Supported Resources

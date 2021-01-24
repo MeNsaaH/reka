@@ -1,8 +1,11 @@
 package rules
 
 import (
+	"unsafe"
+
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mensaah/reka/config"
 	"github.com/mensaah/reka/resource"
 )
 
@@ -23,45 +26,55 @@ const (
 	Destroy
 )
 
-var rules map[string]Ruler
+var (
+	rules        map[string]Ruler
+	excludeRules []*config.ExcludeRule
+)
 
 func init() {
 	rules = make(map[string]Ruler)
 }
 
+// LoadRules loads exclude rules into memory. It is abstracted as a different function because at the time
+// of calling init, config values have not been loaded yet
+func LoadRules() error {
+	var err error
+	for _, rule := range config.GetConfig().Rules {
+		// Convert Rule in config to rules.Rule type
+		r := *((*Rule)(unsafe.Pointer(&rule)))
+		r.Tags = resource.Tags(rule.Tags)
+		err = ParseRule(r)
+		if err != nil {
+			return err
+		}
+	}
+
+	excludeRules = config.GetConfig().Exclude
+	return nil
+}
+
 // Rule that can be defined for resources
 type Rule struct {
-	Name      string
-	Condition struct {
-		ActiveDuration struct {
-			StartTime string
-			StopTime  string
-			StartDay  string
-			StopDay   string
-		}
-		TerminationPolicy string
-		TerminationDate   string
+	*config.Rule
+}
+
+// All checks for resource exclusion are to be done here.
+func (r Rule) shouldExcludeResource(res *resource.Resource) bool {
+	// Check if resource is included in the rule resource block. Resources not included are to be excluded
+	if !hasResourceUri(r.Resources, res) {
+		return true
 	}
-	Tags   resource.Tags
-	Region string
-}
 
-func (r Rule) String() string {
-	return r.Name
-}
-
-// ExcludeRule : Excludes resources that matches this rules
-type ExcludeRule struct {
-	Name      string
-	Region    string
-	Tags      resource.Tags
-	Resources []string
-
-	Validate func() error // Checks if the parameters passed are valid for the rule
+	for _, exRule := range excludeRules {
+		if hasResourceUri(exRule.Resources, res) && hasTags(res, exRule.Tags) {
+			return true
+		}
+	}
+	return false
 }
 
 // ParseRule Get the rule to use for a particular condition
-func ParseRule(rule Rule) Ruler {
+func ParseRule(rule Rule) error {
 	r := []string{rule.Condition.ActiveDuration.StartTime, rule.Condition.TerminationDate, rule.Condition.TerminationPolicy}
 	if hasMultipleConditions(r) {
 		log.Fatalf("Multiple Conditions specified for rule: `%s`", rule.Name)
@@ -83,10 +96,10 @@ func ParseRule(rule Rule) Ruler {
 
 	err := activeRule.validate()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	rules[rule.Name] = activeRule
-	return activeRule
+	return nil
 }
 
 // Checks if multiple conditions are specified for the same rule
@@ -128,6 +141,18 @@ func hasTags(res *resource.Resource, tags resource.Tags) bool {
 		if res.Tags[k] != v {
 			return false
 		}
+	}
+	return true
+}
+
+func hasResourceUri(uris []string, res *resource.Resource) bool {
+	if len(uris) > 0 {
+		for _, v := range uris {
+			if v == res.Uri() {
+				return true
+			}
+		}
+		return false
 	}
 	return true
 }

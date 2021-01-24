@@ -23,6 +23,7 @@ func NewResource(id, manager string) *resource.Resource {
 	resource := resource.Resource{}
 	resource.UUID = id
 	resource.Manager = resourceManagers[manager]
+	resource.ProviderName = providerName
 
 	return &resource
 }

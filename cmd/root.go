@@ -18,7 +18,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"unsafe"
 
 	"github.com/spf13/cobra"
 
@@ -36,12 +35,15 @@ import (
 )
 
 var (
-	cfgFile     string
-	cfg         *config.Config
-	providers   []*types.Provider
-	backend     state.Backender
-	activeState *state.State
-	verbose     bool
+	cfgFile        string
+	cfg            *config.Config
+	providers      []*types.Provider
+	backend        state.Backender
+	activeState    *state.State
+	verbose        bool
+	disableStop    bool
+	disableResume  bool
+	disableDestroy bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -56,12 +58,9 @@ var rootCmd = &cobra.Command{
 		config.LoadConfig()
 
 		cfg = config.GetConfig()
-
-		for _, rule := range cfg.Rules {
-			// Convert Rule in config to rules.Rule type
-			r := *((*rules.Rule)(unsafe.Pointer(&rule)))
-			r.Tags = resource.Tags(rule.Tags)
-			rules.ParseRule(r)
+		err := rules.LoadRules()
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		// Initialize Provider objects
@@ -72,20 +71,26 @@ var rootCmd = &cobra.Command{
 		for _, p := range providers {
 			res := activeState.Current[p.Name]
 
-			stoppableResources := p.GetStoppableResources(res)
-			fmt.Println("Stoppable Resources: ", stoppableResources)
-			errs := p.StopResources(stoppableResources)
-			fmt.Println("Errors Stopping Resources: ", errs)
+			if !disableStop {
+				stoppableResources := p.GetStoppableResources(res)
+				fmt.Println("Stoppable Resources: ", stoppableResources)
+				errs := p.StopResources(stoppableResources)
+				logErrors(errs)
+			}
 
-			resumableResources := p.GetResumableResources(res)
-			fmt.Println("Resumable Resources: ", resumableResources)
-			errs = p.ResumeResources(resumableResources)
-			fmt.Println("Errors Resuming Resources: ", errs)
+			if !disableResume {
+				resumableResources := p.GetResumableResources(res)
+				fmt.Println("Resumable Resources: ", resumableResources)
+				errs := p.ResumeResources(resumableResources)
+				logErrors(errs)
+			}
 
-			destroyableResources := p.GetDestroyableResources(res)
-			fmt.Println("Destroyable Resources: ", destroyableResources)
-			errs = p.DestroyResources(destroyableResources)
-			fmt.Println("Errors Destroying Resources: ", errs)
+			if !disableDestroy {
+				destroyableResources := p.GetDestroyableResources(res)
+				fmt.Println("Destroyable Resources: ", destroyableResources)
+				errs := p.DestroyResources(destroyableResources)
+				logErrors(errs)
+			}
 		}
 	},
 }
@@ -104,6 +109,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.reka.yaml)")
 	rootCmd.Flags().BoolP("unused-only", "t", false, "Reap only unused resources")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Output verbose logs (DEBUG)")
+	rootCmd.Flags().BoolVar(&disableStop, "disable-stop", false, "Disable stopping of resources")
+	rootCmd.Flags().BoolVar(&disableResume, "disable-resume", false, "Disable resuming of resources")
+	rootCmd.Flags().BoolVar(&disableDestroy, "disable-destroy", false, "Disable destruction of resources")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -200,4 +208,10 @@ func containsResource(res []*resource.Resource, r *resource.Resource) bool {
 		}
 	}
 	return false
+}
+
+func logErrors(errs map[string]error) {
+	for k, v := range errs {
+		log.Errorf("%s: %s", k, v.Error())
+	}
 }
