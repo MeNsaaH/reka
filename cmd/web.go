@@ -36,7 +36,7 @@ var (
 // webCmd represents the web command
 var webCmd = &cobra.Command{
 	Use:   "web",
-	Short: "A brief description of your command",
+	Short: "Start a web-server for running reka and exposes a simple Dashboard",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 

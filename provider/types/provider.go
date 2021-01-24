@@ -1,7 +1,8 @@
 package types
 
 import (
-	"fmt"
+	"os"
+	"path"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -32,7 +33,17 @@ type Provider struct {
 
 // SetLogger : Sets Logger properties for Provider
 func (p *Provider) SetLogger(id string) {
-	logFile := fmt.Sprintf("%s/%s.log", config.GetConfig().LogPath, id)
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	logPath := config.GetConfig().LogPath
+	if logPath == "" {
+		logPath = path.Join(workingDir, "logs")
+	}
+
+	logFile := path.Join(logPath, id)
 	// Setup Logger
 	p.LogPath = logFile
 	p.Logger = config.GetLogger(p.Name, logFile)

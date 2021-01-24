@@ -20,6 +20,8 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/mensaah/reka/provider/aws"
+	"github.com/mensaah/reka/provider/gcp"
 	"github.com/mensaah/reka/provider/types"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +45,7 @@ var markdownTemplate = `
 // resourcesCmd represents the resources command
 var resourcesCmd = &cobra.Command{
 	Use:   "resources",
-	Short: "A brief description of your command",
+	Short: "Shows a list of resources currently supported by reka",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -54,7 +56,12 @@ to quickly create a Cobra application.`,
 		type pr struct {
 			Providers []*types.Provider
 		}
-		p := pr{Providers: providers}
+		p := pr{Providers: []*types.Provider{}}
+		awsProvider, _ := aws.NewProvider()
+		gcpProvider, _ := gcp.NewProvider()
+
+		p.Providers = append(p.Providers, awsProvider, gcpProvider)
+
 		// Create a new template and parse the letter into it.
 		t := template.Must(template.New("markdown").Parse(markdownTemplate))
 
