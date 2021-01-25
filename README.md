@@ -4,6 +4,7 @@
 <br>
 
 [![Build Status](https://github.com/mensaah/reka/workflows/Test/badge.svg)](https://github.com/mensaah/reka/actions)
+[![deploy](https://github.com/MeNsaaH/reka/workflows/deploy/badge.svg)](https://github.com/mensaah/reka/actions)
 
 
 A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resources based on tags. Reka uses a config to determine what actions should be taken on resources. It can prove to be a cost management tool where you can stop your tests environments during breaks, holidays and non-working hours. It can also be a nuke tool to nuke an account. It currently supports both AWS and GCP. A full list of supported resources can be found [here](./docs/supported-resources.md) 
@@ -13,7 +14,7 @@ A Cloud Infrastructure Management Tool to stop, resume, clean and destroy resour
 - Destroy/Terminate resources 
 - Clean Up unused resources (such as EBS volumes, Elastic IPs)
 
-### Project Name
+#### Project Name
 `REKA` is derived from a Native Nigerian Language, Igbo, meaning `Reap`|`Tear Down`.
 
 ### BEWARE!
@@ -48,8 +49,8 @@ The reka image is also available on DockerHub.
 If `config.yaml` is in the current directory, reka can be executed as:
 
 ```bash
-    docker -it -e AWS_ACCESS_KEY -e AWS_SECRET_ACCESS_KEY\
-        -v `pwd`:/config run mensaah/reka --config /config/config.yaml
+    docker run -it -e AWS_ACCESS_KEY -e AWS_SECRET_ACCESS_KEY\
+        -v `pwd`:/config mensaah/reka --config /config/config.yaml
 ```
 
 #### Go
