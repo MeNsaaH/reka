@@ -16,6 +16,15 @@ builds:
     - goos: darwin
       goarch: 386
 
+dockers:
+  - image_templates:
+    - mensaah/{{.ProjectName}}
+    goos: linux
+    goarch: amd64
+    goarm: ''
+    dockerfile: Dockerfile
+    skip_push: false
+
 archives:
   - name_template: "{{.Binary}}_{{.Os}}_{{.Arch}}"
     format_overrides:
