@@ -7,6 +7,24 @@ import (
 	"github.com/mensaah/reka/state"
 )
 
+// GetRDSStatus Get current status of an RDS DBInstance
+func GetRDSStatus(f string) resource.Status {
+	switch f {
+	case "creating", "modifying", "upgrading":
+		return resource.Pending
+	case "stopped":
+		return resource.Stopped
+	case "stopping":
+		return resource.Stopping
+	case "deleting":
+		return resource.ShuttingDown
+	case "failed":
+		return resource.Destroyed
+	default:
+		return resource.Running
+	}
+}
+
 // GetResourceStatus Get the current status of Resource: Pending, Running, ... Stopped
 func GetResourceStatus(s int32) resource.Status {
 	switch s {
