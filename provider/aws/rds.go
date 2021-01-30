@@ -14,7 +14,7 @@ import (
 // returns only instance IDs of unprotected rds instances
 func getrdsInstanceDetails(svc *rds.Client, output *rds.DescribeDBClustersOutput, region string) ([]*resource.Resource, error) {
 	var rdsInstances []*resource.Resource
-	rdsLogger.Debug("Fetching EC2 Details")
+	rdsLogger.Debug("Fetching RDS Details")
 	for _, instance := range output.DBClusters {
 		tags := make(resource.Tags)
 		for _, t := range instance.TagList {
