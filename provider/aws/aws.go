@@ -44,6 +44,7 @@ func NewProvider() (*types.Provider, error) {
 	ebsManager := newEbsManager(cfg, aws.LogPath)
 	eipManager := newEipManager(cfg, aws.LogPath)
 	amiManager := newAmiManager(cfg, aws.LogPath)
+	rdsManager := newRDSManager(cfg, aws.LogPath)
 
 	resourceManagers = map[string]*resource.Manager{
 		ec2Manager.Name: &ec2Manager,
@@ -52,6 +53,7 @@ func NewProvider() (*types.Provider, error) {
 		ebsManager.Name: &ebsManager,
 		eipManager.Name: &eipManager,
 		amiManager.Name: &amiManager,
+		rdsManager.Name: &rdsManager,
 	}
 
 	aws.Managers = resourceManagers

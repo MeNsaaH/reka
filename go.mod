@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v0.2.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v0.31.0
 	github.com/aws/aws-sdk-go-v2/service/eks v0.31.0
+	github.com/aws/aws-sdk-go-v2/service/rds v0.31.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v0.31.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-co-op/gocron v0.5.0
