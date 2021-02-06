@@ -26,10 +26,10 @@ func newCloudStorageManager(cfg *config.Config, logPath string) resource.Manager
 		Config:   cfg,
 		Logger:   logger,
 		GetAll: func() ([]*resource.Resource, error) {
-			return getAllBuckets(&cfg.Gcp)
+			return getAllBuckets(cfg.Gcp)
 		},
 		Destroy: func(resources []*resource.Resource) error {
-			return destroyBuckets(&cfg.Gcp, resources)
+			return destroyBuckets(cfg.Gcp, resources)
 		},
 	}
 }

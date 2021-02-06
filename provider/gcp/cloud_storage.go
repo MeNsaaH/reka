@@ -26,7 +26,7 @@ func getAllBuckets(cfg *config.Gcp) ([]*resource.Resource, error) {
 			break
 		}
 		if err != nil {
-			log.Errorf(err.Error())
+			return []*resource.Resource{}, err
 		}
 		bucket := NewResource(bucketAttrs.Name, cloudStorageName)
 		bucket.Status = resource.Running
@@ -34,7 +34,7 @@ func getAllBuckets(cfg *config.Gcp) ([]*resource.Resource, error) {
 		bucket.Tags = bucketAttrs.Labels
 		buckets = append(buckets, bucket)
 	}
-	log.Debugf("Found %s storage buckets", len(buckets))
+	log.Debugf("Found %d storage buckets", len(buckets))
 	return buckets, nil
 }
 
