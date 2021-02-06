@@ -54,6 +54,7 @@ func getAllComputeInstances(cfg *config.Gcp) ([]*resource.Resource, error) {
 	return computeInstances, nil
 }
 
+// https://cloud.google.com/compute/docs/reference/latest/instances/stop
 func stopComputeInstances(cfg *config.Gcp, instances []*resource.Resource) error {
 	log.Debug("Fetching Cloud storage computeInstance")
 	ctx := context.Background()
