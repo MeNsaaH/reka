@@ -12,7 +12,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Install dependencies
       run: go get -v
-    - name: Check Supported resources command
-      run: go run main.go resources 
+    - name: check if supported resources list is up to date
+      run: |
+        go run main.go resources > actual.md
+        echo "Supported resources list can be updated by running 'go run main.go resources > docs/supported-resources.md'"
+        diff actual.md docs/supported-resources.md
     - name: Test
       run: go test .

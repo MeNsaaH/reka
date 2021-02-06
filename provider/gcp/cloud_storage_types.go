@@ -9,7 +9,7 @@ import (
 
 const (
 	// Name of resource
-	cloudStorageName = "CloudStorage"
+	cloudStorageName = "cloud_storage"
 	// LongName descriptive name for resource
 	cloudStorageLongName = "Simple Storage Service"
 )
