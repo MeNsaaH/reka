@@ -39,9 +39,11 @@ func NewProvider() (*types.Provider, error) {
 	cfg := config.GetConfig()
 
 	cloudStorageManager := newCloudStorageManager(cfg, gcp.LogPath)
+	computeInstanceManager := newComputeInstanceManager(cfg, gcp.LogPath)
 
 	resourceManagers = map[string]*resource.Manager{
-		cloudStorageManager.Name: &cloudStorageManager,
+		cloudStorageManager.Name:    &cloudStorageManager,
+		computeInstanceManager.Name: &computeInstanceManager,
 	}
 
 	gcp.Managers = resourceManagers

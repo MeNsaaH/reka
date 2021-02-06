@@ -10,7 +10,13 @@ import (
 // GetLogger returns a logger for logging manager processes
 // Logs are also persisted to file
 func GetLogger(mgrName, logPath string) *log.Entry {
-	logger := log.New()
+	logger := &log.Logger{
+		Formatter: &log.TextFormatter{
+			// DisableColors: true,
+			FullTimestamp:    false,
+			DisableTimestamp: true,
+		},
+	}
 	if config.Verbose {
 		logger.SetLevel(log.DebugLevel)
 	}

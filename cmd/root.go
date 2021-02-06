@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -164,6 +165,7 @@ func initProviders() []*types.Provider {
 		}
 		providers = append(providers, provider)
 	}
+	log.Infof("Loaded Providers: %s", strings.Join(config.GetProviders()[:], ","))
 	return providers
 }
 

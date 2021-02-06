@@ -90,7 +90,7 @@ type Config struct {
 	// AWS Config
 	Aws *aws.Config
 	// Gcp configuration
-	Gcp Gcp
+	Gcp *Gcp
 }
 
 // RemoteBackendTypes allowed remote storage
