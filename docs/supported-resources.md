@@ -3,8 +3,8 @@
 ## aws
 | Resource | Destroyable| Stoppable|
 | ---------|:----------:| --------:|
-| EBS      | true | false |
 | ami      | true | false |
+| ebs      | true | false |
 | ec2      | true | true |
 | eip      | true | false |
 | eks      | true | true |
@@ -15,3 +15,4 @@
 | ---------|:----------:| --------:|
 | cloud_storage      | true | false |
 | compute      | true | true |
+| gke      | true | true |

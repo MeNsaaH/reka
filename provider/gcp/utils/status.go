@@ -10,25 +10,21 @@ import (
 // GetResourceStatus Get the current status of Resource: Pending, Running, ... Stopped
 func GetComputeInstanceStatus(s string) resource.Status {
 	switch s {
-	case "PROVISIONING":
-	case "REPAIRING":
-	case "STAGING":
+	case "PROVISIONING", "REPARING", "STAGING":
 		return resource.Pending
 	case "RUNNING":
 		return resource.Running
 	case "DEPROVISIONING":
 		return resource.ShuttingDown
-	case "STOPPING":
-	case "SUSPENDING":
+	case "STOPPING", "SUSPENDING":
 		return resource.Stopping
-	case "STOPPED":
-	case "SUSPENDED":
-	case "TERMINATED":
+	case "STOPPED", "SUSPENDED", "TERMINATED":
 		return resource.Stopped
+	case "ERROR", "DEGRADED":
+		return resource.Error
 	default:
 		return resource.Destroyed
 	}
-	return resource.Destroyed
 }
 
 func GetResourceFromDesiredState(providerName, resMgr, uid string) (*resource.Resource, error) {

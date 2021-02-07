@@ -40,10 +40,12 @@ func NewProvider() (*types.Provider, error) {
 
 	cloudStorageManager := newCloudStorageManager(cfg, gcp.LogPath)
 	computeInstanceManager := newComputeInstanceManager(cfg, gcp.LogPath)
+	gkeManager := newGkeManager(cfg, gcp.LogPath)
 
 	resourceManagers = map[string]*resource.Manager{
 		cloudStorageManager.Name:    &cloudStorageManager,
 		computeInstanceManager.Name: &computeInstanceManager,
+		gkeManager.Name:             &gkeManager,
 	}
 
 	gcp.Managers = resourceManagers
