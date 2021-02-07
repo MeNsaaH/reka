@@ -50,8 +50,9 @@ type Resource struct {
 	Manager      *Manager `gorm:"foreignKey:ManagerName;references:Name" json:"-"`
 	ProviderName string
 
-	Region string // Region/Location of Resource
-	Zone   string // Zone of Resource
+	Region   string // Region of Resource
+	Zone     string // Zone of Resource
+	Location string // Location of Resource. Sometimes this is set to Region or Zone depending on the Resource itself
 
 	// The state of the instance; stopped, running, pending
 	Status Status

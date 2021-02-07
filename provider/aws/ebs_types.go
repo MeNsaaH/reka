@@ -14,7 +14,7 @@ var ebsManager resource.Manager
 
 const (
 	// Name of resource
-	ebsName = "EBS"
+	ebsName = "ebs"
 	// LongName descriptive name for resource
 	ebsLongName = "Elastic Block Storage"
 )
